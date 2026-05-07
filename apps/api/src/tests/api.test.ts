@@ -85,6 +85,17 @@ describe("Products API", () => {
     expect(res.body.items.length).toBeLessThanOrEqual(3);
   });
 
+  it("GET /api/products — exposes migrated Ntbeauty public catalog", async () => {
+    const res = await request(app).get("/api/products?limit=50");
+    expect(res.status).toBe(200);
+    expect(res.body.total).toBeGreaterThanOrEqual(27);
+    const titles = res.body.items.map((item: { title: string }) => item.title);
+    expect(titles).toContain("S.O.S KREM");
+    expect(titles).toContain("SOMON DNA SERUM");
+    expect(titles).toContain("GÜNEŞ KREMİ 50SPF");
+    expect(titles).toContain("BODY GLOW OIL");
+  });
+
   it("GET /api/products/:slug — 404 for unknown slug", async () => {
     const res = await request(app).get("/api/products/does-not-exist-xyz");
     expect(res.status).toBe(404);
