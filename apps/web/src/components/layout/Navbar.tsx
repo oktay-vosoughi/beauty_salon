@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { site } from "@/lib/site";
 import styles from "./Navbar.module.css";
 
 const navLinks = [
@@ -19,7 +20,7 @@ export default function Navbar() {
     <nav className={styles.nav}>
       <div className={`container ${styles.inner}`}>
         <Link href="/" className={styles.brand}>
-          ✦ Güzellik Merkezi
+          ✦ {site.name}
         </Link>
 
         <button

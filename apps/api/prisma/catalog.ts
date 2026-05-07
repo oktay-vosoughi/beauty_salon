@@ -62,7 +62,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 850,
     stock: 25,
     categorySlug: "serum",
-    imageUrl: "/bg_1.jpg",
+    imageUrl: "/image_1.jpg",
   },
   {
     title: "WHITENING PEELING",
@@ -72,7 +72,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 750,
     stock: 25,
     categorySlug: "cilt-bakim",
-    imageUrl: "/bg_2.jpg",
+    imageUrl: "/image_2.jpg",
   },
   {
     title: "NEW MEDİUM DD CONCEALER",
@@ -82,7 +82,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 550,
     stock: 25,
     categorySlug: "makyaj",
-    imageUrl: "/intro.jpg",
+    imageUrl: "/image_3.jpg",
   },
   {
     title: "NEW LIP&CHEEK PEACH NO.1",
@@ -120,7 +120,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 580,
     stock: 15,
     categorySlug: "vucut-bakimi",
-    imageUrl: "/bg_1.jpg",
+    imageUrl: "/image_1.jpg",
   },
   {
     title: "NEW LİGHT DD CONCEALER",
@@ -130,7 +130,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 550,
     stock: 25,
     categorySlug: "makyaj",
-    imageUrl: "/bg_2.jpg",
+    imageUrl: "/image_2.jpg",
   },
   {
     title: "RADIANCE MULTI-PEN M1",
@@ -140,7 +140,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 420,
     stock: 25,
     categorySlug: "makyaj",
-    imageUrl: "/intro.jpg",
+    imageUrl: "/image_3.jpg",
   },
   {
     title: "NEW LIP&CHEEK CANDY NO.2",
@@ -180,7 +180,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 750,
     stock: 25,
     categorySlug: "cilt-bakim",
-    imageUrl: "/bg_1.jpg",
+    imageUrl: "/image_1.jpg",
   },
   {
     title: "DD KREM DARK",
@@ -190,7 +190,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 620,
     stock: 25,
     categorySlug: "makyaj",
-    imageUrl: "/bg_2.jpg",
+    imageUrl: "/image_2.jpg",
   },
   {
     title: "BROWNIE",
@@ -200,7 +200,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 350,
     stock: 25,
     categorySlug: "lip-cheek",
-    imageUrl: "/intro.jpg",
+    imageUrl: "/image_3.jpg",
   },
   {
     title: "BRONZING OIL",
@@ -239,7 +239,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 350,
     stock: 25,
     categorySlug: "makyaj",
-    imageUrl: "/bg_1.jpg",
+    imageUrl: "/image_1.jpg",
   },
   {
     title: "ALL FIRED",
@@ -249,7 +249,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 350,
     stock: 25,
     categorySlug: "lip-cheek",
-    imageUrl: "/bg_2.jpg",
+    imageUrl: "/image_2.jpg",
   },
   {
     title: "GÖZ FARI SUNSET",
@@ -259,7 +259,7 @@ export const migratedProducts: CatalogProduct[] = [
     price: 550,
     stock: 25,
     categorySlug: "goz-makyaji",
-    imageUrl: "/intro.jpg",
+    imageUrl: "/image_3.jpg",
   },
   {
     title: "GOLDEN HOUR",
