@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildMetadata } from "@/lib/seo";
+import { categoryLinks } from "@/lib/site";
 import styles from "../../urunler/page.module.css";
 
 interface Category {
@@ -65,8 +66,7 @@ async function getProducts(categoryId: number): Promise<ProductsResponse> {
 }
 
 export async function generateStaticParams() {
-  const categories = await getCategories();
-  return categories.map((category) => ({ slug: category.slug }));
+  return categoryLinks.map((category) => ({ slug: category.slug }));
 }
 
 export async function generateMetadata({

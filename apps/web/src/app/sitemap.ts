@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { legalLinks } from "@/lib/site";
+import { categoryLinks, legalLinks } from "@/lib/site";
 
 const API = process.env.API_BASE_URL ?? "http://localhost:4000";
 
@@ -23,25 +23,9 @@ async function getProductSlugs(): Promise<string[]> {
   }
 }
 
-async function getCategorySlugs(): Promise<string[]> {
-  try {
-    const res = await fetch(`${API}/api/categories`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data as { slug: string }[]).map((category) => category.slug);
-  } catch {
-    return [];
-  }
-}
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.WEB_BASE_URL ?? "http://localhost:3000";
-  const [slugs, categorySlugs] = await Promise.all([
-    getProductSlugs(),
-    getCategorySlugs(),
-  ]);
+  const slugs = await getProductSlugs();
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
@@ -61,8 +45,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const categoryPages: MetadataRoute.Sitemap = categorySlugs.map((slug) => ({
-    url: `${base}/kategori/${slug}`,
+  const categoryPages: MetadataRoute.Sitemap = categoryLinks.map((category) => ({
+    url: `${base}${category.href}`,
     changeFrequency: "weekly",
     priority: 0.7,
   }));

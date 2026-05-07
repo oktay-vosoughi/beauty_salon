@@ -31,6 +31,25 @@ export const legalLinks = [
   },
 ];
 
+export const categoryLinks = [
+  { href: "/kategori/cilt-bakim", slug: "cilt-bakim", label: "Cilt Bakım" },
+  { href: "/kategori/serum", slug: "serum", label: "Serum" },
+  {
+    href: "/kategori/gunes-urunleri",
+    slug: "gunes-urunleri",
+    label: "Güneş Ürünleri",
+  },
+  { href: "/kategori/lip-cheek", slug: "lip-cheek", label: "Lip & Cheek" },
+  { href: "/kategori/goz-makyaji", slug: "goz-makyaji", label: "Göz Makyajı" },
+  {
+    href: "/kategori/kas-ve-kirpik",
+    slug: "kas-ve-kirpik",
+    label: "Kaş ve Kirpik",
+  },
+  { href: "/kategori/vucut-bakimi", slug: "vucut-bakimi", label: "Vücut Bakımı" },
+  { href: "/kategori/makyaj", slug: "makyaj", label: "Makyaj" },
+];
+
 export function getSiteUrl() {
   return process.env.WEB_BASE_URL ?? "http://localhost:3000";
 }
