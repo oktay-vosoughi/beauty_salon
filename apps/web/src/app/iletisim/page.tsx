@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import ContactForm from "./ContactForm";
+import { buildMetadata } from "@/lib/seo";
+import { site } from "@/lib/site";
 import styles from "./page.module.css";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "İletişim",
-  description: "Güzellik Merkezi ile iletişime geçin. Adres, telefon ve e-posta bilgilerimiz.",
-};
+  description:
+    "Niltellioglu cilt bakım ve kozmetik ürünleri için iletişim bilgileri. Çekmeköy İstanbul adresi ve info@niltellioglu.com e-posta desteği.",
+  path: "/iletisim",
+});
 
 export default function IletisimPage() {
   return (
@@ -21,16 +25,13 @@ export default function IletisimPage() {
             <h3>İletişim Bilgileri</h3>
             <ul className={styles.list}>
               <li>
-                <strong>Adres:</strong> Bağcılar, İstanbul
+                <strong>Firma:</strong> {site.legalName}
               </li>
               <li>
-                <strong>Telefon:</strong> +90 (212) 000 00 00
+                <strong>Adres:</strong> {site.address}
               </li>
               <li>
-                <strong>E-posta:</strong> info@guzellikmerkezi.com.tr
-              </li>
-              <li>
-                <strong>Çalışma Saatleri:</strong> Pzt–Cmt 09:00–20:00
+                <strong>E-posta:</strong> {site.email}
               </li>
             </ul>
           </div>

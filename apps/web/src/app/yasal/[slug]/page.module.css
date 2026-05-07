@@ -1,0 +1,53 @@
+.wrap {
+  max-width: 860px;
+}
+
+.eyebrow {
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.wrap h1 {
+  color: var(--color-dark);
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  line-height: 1.2;
+  margin: 0 0 1rem;
+}
+
+.lead {
+  color: var(--color-muted);
+  font-size: 1rem;
+  line-height: 1.75;
+  margin: 0 0 2rem;
+}
+
+.section {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 1.6rem 0 0;
+  margin-top: 1.6rem;
+}
+
+.section h2 {
+  color: var(--color-dark);
+  font-size: 1.15rem;
+  line-height: 1.35;
+  margin: 0 0 0.75rem;
+}
+
+.section p {
+  color: var(--color-text);
+  font-size: 0.94rem;
+  line-height: 1.75;
+  margin: 0 0 0.85rem;
+}
+
+@media (max-width: 576px) {
+  .wrap h1 {
+    font-size: 1.8rem;
+  }
+}

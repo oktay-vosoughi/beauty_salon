@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { legalLinks } from "@/lib/site";
 
 const API = process.env.API_BASE_URL ?? "http://localhost:4000";
 
@@ -30,6 +31,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: base, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
     { url: `${base}/urunler`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/iletisim`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
+    ...legalLinks.map((link) => ({
+      url: `${base}${link.href}`,
+      lastModified: new Date(),
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    })),
   ];
 
   const productPages: MetadataRoute.Sitemap = slugs.map((slug) => ({
