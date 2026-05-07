@@ -1,25 +1,24 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { getSiteUrl, site } from "@/lib/site";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Güzellik Merkezi — Doğal Güzellik Ürünleri",
-    template: "%s | Güzellik Merkezi",
+    default: "Niltellioglu | Cilt Bakım ve Kozmetik",
+    template: "%s | Niltellioglu",
   },
   description:
-    "Profesyonel güzellik ve cilt bakım ürünleri. Türkiye'nin güvenilen online güzellik mağazası.",
-  keywords: ["güzellik", "cilt bakımı", "kozmetik", "doğal ürünler", "spa"],
-  authors: [{ name: "Güzellik Merkezi" }],
-  creator: "Güzellik Merkezi",
-  metadataBase: new URL(
-    process.env.WEB_BASE_URL ?? "http://localhost:3000"
-  ),
+    "Niltellioglu cilt bakım, kozmetik ve güzellik ürünleri. Nil Tellioğlu Beauty seçkisini İstanbul Çekmeköy merkezli güvenilir alışveriş deneyimiyle keşfedin.",
+  keywords: site.keywords,
+  authors: [{ name: site.legalName }],
+  creator: site.name,
+  metadataBase: new URL(getSiteUrl()),
   openGraph: {
     type: "website",
-    locale: "tr_TR",
-    siteName: "Güzellik Merkezi",
+    locale: site.locale,
+    siteName: site.name,
   },
 };
 
