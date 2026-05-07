@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { buildMetadata } from "@/lib/seo";
 import styles from "./page.module.css";
 
-export const metadata: Metadata = {
-  title: "Ürünler",
-  description: "Tüm güzellik ürünlerimizi keşfedin. Cilt bakımı, saç bakımı ve daha fazlası.",
-};
+export const metadata: Metadata = buildMetadata({
+  title: "Cilt Bakım ve Kozmetik Ürünleri",
+  description:
+    "Niltellioglu cilt bakım, kozmetik, makyaj, güneş ürünleri ve Nil Tellioğlu Beauty seçkisini online keşfedin.",
+  path: "/urunler",
+  images: [{ url: "/image_1.jpg", alt: "Niltellioglu ürünleri" }],
+});
 
 interface ProductImage {
   url: string;
@@ -58,7 +62,7 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
       <div className="container">
         <div className="section-title">
           <h2>Ürünlerimiz</h2>
-          <p>Profesyonel güzellik ürünlerini keşfedin</p>
+          <p>Niltellioglu cilt bakım, kozmetik ve makyaj ürünlerini keşfedin</p>
         </div>
 
         {items.length === 0 ? (
@@ -69,7 +73,7 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
           <>
             <p className={styles.count}>{total} ürün listeleniyor</p>
             <div className={styles.grid}>
-              {items.map((p) => {
+              {items.map((p, index) => {
                 const imgUrl = p.images[0]?.url ?? "/images/placeholder.jpg";
                 return (
                   <Link key={p.id} href={`/urunler/${p.slug}`} className={styles.card}>
@@ -80,6 +84,7 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
                         fill
                         sizes="(max-width: 480px) 100vw, (max-width: 900px) 50vw, 25vw"
                         style={{ objectFit: "cover" }}
+                        priority={index === 0}
                       />
                     </div>
                     <div className={styles.body}>

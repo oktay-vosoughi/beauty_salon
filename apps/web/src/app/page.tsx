@@ -2,18 +2,41 @@ import type { Metadata } from "next";
 import Hero from "@/components/layout/Hero";
 import styles from "./page.module.css";
 import Link from "next/link";
-import Image from "next/image";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
+  title: "Niltellioglu Cilt Bakım ve Kozmetik Ürünleri",
   description:
-    "Güzellik Merkezi — Doğal güzellik ürünleri ve profesyonel cilt bakımı. Online sipariş verin.",
-};
+    "Niltellioglu ve Nil Tellioğlu Beauty cilt bakım, kozmetik, makyaj ve güneş ürünleri. Çekmeköy İstanbul merkezli güvenli online alışveriş.",
+  path: "/",
+  images: [{ url: "/bg_1.jpg", alt: "Niltellioglu cilt bakım ve kozmetik" }],
+});
 
 const categories = [
-  { icon: "🌿", title: "Cilt Bakımı", desc: "Nemlendirici, serum ve maskeler" },
-  { icon: "💆", title: "Saç Bakımı", desc: "Şampuan, saç maskesi ve yağlar" },
-  { icon: "🌸", title: "Vücut Bakımı", desc: "Losyon, peeling ve banyo ürünleri" },
-  { icon: "💄", title: "Makyaj", desc: "Doğal içerikli makyaj ürünleri" },
+  {
+    icon: "🌿",
+    title: "Cilt Bakım",
+    desc: "Serum, peeling ve günlük bakım ürünleri",
+    href: "/kategori/cilt-bakim",
+  },
+  {
+    icon: "☀️",
+    title: "Güneş Ürünleri",
+    desc: "SPF ve ışıltılı vücut bakım ürünleri",
+    href: "/kategori/gunes-urunleri",
+  },
+  {
+    icon: "💄",
+    title: "Lip & Cheek",
+    desc: "Dudak ve yanak için çok amaçlı renkler",
+    href: "/kategori/lip-cheek",
+  },
+  {
+    icon: "✨",
+    title: "Makyaj",
+    desc: "Concealer, göz farı ve multi-pen ürünleri",
+    href: "/kategori/makyaj",
+  },
 ];
 
 export default function HomePage() {
@@ -26,7 +49,7 @@ export default function HomePage() {
         <div className="container">
           <div className="section-title">
             <h2>Kategoriler</h2>
-            <p>İhtiyacınıza göre en uygun güzellik ürünlerini keşfedin</p>
+            <p>Cilt bakım ve kozmetik rutininiz için Niltellioglu seçkisini keşfedin</p>
           </div>
           <div className={styles.catGrid}>
             {categories.map((cat) => (
@@ -34,7 +57,7 @@ export default function HomePage() {
                 <div className={styles.catIcon}>{cat.icon}</div>
                 <h3>{cat.title}</h3>
                 <p>{cat.desc}</p>
-                <Link href="/urunler" className={`btn btn-outline ${styles.catBtn}`}>
+                <Link href={cat.href} className={`btn btn-outline ${styles.catBtn}`}>
                   İncele
                 </Link>
               </div>
@@ -50,15 +73,16 @@ export default function HomePage() {
           <div className={styles.aboutContent}>
             <h2>Neden Bizi Seçmelisiniz?</h2>
             <p>
-              10 yılı aşkın deneyimimizle, en kaliteli doğal güzellik ürünlerini
-              kapınıza getiriyoruz. Uzman ekibimiz tarafından seçilen her ürün,
-              cilt güvenliği testlerinden geçmektedir.
+              Niltellioglu, Nil Tellioğlu Beauty ürün seçkisini modern ve güvenli
+              bir online alışveriş deneyimiyle sunar. Cilt bakım, makyaj ve
+              kozmetik ürünlerini net içerik bilgisi ve sade alışveriş akışıyla
+              inceleyebilirsiniz.
             </p>
             <ul className={styles.benefits}>
-              <li>✓ %100 Doğal İçerikler</li>
-              <li>✓ Hayvan Deneyi Yapılmaz</li>
-              <li>✓ Hızlı ve Güvenli Kargo</li>
-              <li>✓ 30 Gün İade Garantisi</li>
+              <li>✓ Çekmeköy İstanbul merkezli marka bilgisi</li>
+              <li>✓ Cilt bakım ve kozmetik odaklı ürün seçkisi</li>
+              <li>✓ Güvenli ödeme ve sipariş altyapısı</li>
+              <li>✓ KVKK, iade ve satış koşulları açıkça erişilebilir</li>
             </ul>
             <Link href="/urunler" className="btn btn-primary">
               Alışverişe Başla
@@ -72,7 +96,7 @@ export default function HomePage() {
         <div className="container">
           <div className="section-title">
             <h2>Öne Çıkan Ürünler</h2>
-            <p>En çok tercih edilen güzellik ürünlerimiz</p>
+            <p>Cilt bakım ve kozmetik kategorilerinde öne çıkan Niltellioglu ürünleri</p>
           </div>
           <div className={styles.productsPlaceholder}>
             <p>Ürünler yükleniyor…</p>

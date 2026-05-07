@@ -8,11 +8,11 @@ export default function Hero() {
       <div className={styles.content}>
         <div className={styles.icon}>✦</div>
         <h1 className={styles.title}>
-          Güzelliğinizi Keşfedin
+          Niltellioglu Cilt Bakım ve Kozmetik
         </h1>
         <p className={styles.subtitle}>
-          Doğal içeriklerle hazırlanmış profesyonel güzellik ürünleri.
-          Cilt bakımından saç bakımına, spa deneyiminizi eve taşıyın.
+          Nil Tellioğlu Beauty ürün seçkisiyle cilt bakım, makyaj ve kozmetik
+          rutininizi sade ve güvenli bir alışveriş deneyimiyle tamamlayın.
         </p>
         <div className={styles.buttons}>
           <Link href="/urunler" className="btn btn-primary">

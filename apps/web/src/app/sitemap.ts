@@ -23,9 +23,25 @@ async function getProductSlugs(): Promise<string[]> {
   }
 }
 
+async function getCategorySlugs(): Promise<string[]> {
+  try {
+    const res = await fetch(`${API}/api/categories`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data as { slug: string }[]).map((category) => category.slug);
+  } catch {
+    return [];
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.WEB_BASE_URL ?? "http://localhost:3000";
-  const slugs = await getProductSlugs();
+  const [slugs, categorySlugs] = await Promise.all([
+    getProductSlugs(),
+    getCategorySlugs(),
+  ]);
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
@@ -45,5 +61,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticPages, ...productPages];
+  const categoryPages: MetadataRoute.Sitemap = categorySlugs.map((slug) => ({
+    url: `${base}/kategori/${slug}`,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...categoryPages, ...productPages];
 }
