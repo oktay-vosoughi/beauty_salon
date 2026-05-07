@@ -1,0 +1,52 @@
+Review + Fix Summary
+
+  Code review found 7 Critical, 8 High, 7 Medium, 7 Low issues. All Critical and High were implemented.
+
+  Critical fixes applied
+
+  ┌───────┬───────────────────────────────────┬─────────────────────────────────────────────────────┐
+  │   #   │               Issue               │                         Fix                         │
+  ├───────┼───────────────────────────────────┼─────────────────────────────────────────────────────┤
+  │ CR-01 │ Admin panel fully public (no      │ admin/layout.tsx now async, fetches /api/auth/me    │
+  │       │ server-side auth)                 │ server-side, redirects non-admins                   │
+  ├───────┼───────────────────────────────────┼─────────────────────────────────────────────────────┤
+  │ CR-02 │ Session fixation — no             │ req.session.regenerate() added to login + register  │
+  │       │ regenerate() on login             │                                                     │
+  ├───────┼───────────────────────────────────┼─────────────────────────────────────────────────────┤
+  │ CR-03 │ Timing-unsafe hash comparison in  │ timingSafeEqual from Node.js crypto                 │
+  │       │ PayTR callback                    │                                                     │
+  ├───────┼───────────────────────────────────┼─────────────────────────────────────────────────────┤
+  │ CR-04 │ Stock not reserved at order time  │ Stock decremented in order transaction; restored on │
+  │       │ — overselling possible            │  payment failure                                    │
+  ├───────┼───────────────────────────────────┼─────────────────────────────────────────────────────┤
+  │ CR-05 │ INIT/PENDING mismatch broke       │ Payments created as INIT, idempotency check         │
+  │       │ payment idempotency               │ corrected                                           │
+  ├───────┼───────────────────────────────────┼─────────────────────────────────────────────────────┤
+  │ CR-06 │ Callback didn't verify            │ Amount mismatch check added before marking order    │
+  │       │ total_amount matches DB           │ PAID                                                │
+  └───────┴───────────────────────────────────┴─────────────────────────────────────────────────────┘
+
+  High fixes applied
+
+  ┌───────┬─────────────────────────────────────────┬───────────────────────────────────────────────┐
+  │   #   │                  Issue                  │                      Fix                      │
+  ├───────┼─────────────────────────────────────────┼───────────────────────────────────────────────┤
+  │ HI-01 │ Shipping cost ignored — wrong charge    │ 29.90 TL shipping added server-side in        │
+  │       │ amount                                  │ orders.ts                                     │
+  ├───────┼─────────────────────────────────────────┼───────────────────────────────────────────────┤
+  │ HI-02 │ clearCookie missing options — logout    │ Added httpOnly/secure/sameSite/path to        │
+  │       │ may fail                                │ clearCookie                                   │
+  ├───────┼─────────────────────────────────────────┼───────────────────────────────────────────────┤
+  │ HI-03 │ Image optimizer SSRF via wildcard       │ Restricted remotePatterns to localhost +      │
+  │       │ hostname                                │ cloudinary                                    │
+  ├───────┼─────────────────────────────────────────┼───────────────────────────────────────────────┤
+  │ HI-04 │ Admin orders select defaultValue —      │ Changed to value (controlled component)       │
+  │       │ stale UI                                │                                               │
+  ├───────┼─────────────────────────────────────────┼───────────────────────────────────────────────┤
+  │ HI-06 │ PayTR callback 404 — PayTR retries      │ Returns 200 OK for unknown merchant_oid       │
+  │       │ indefinitely                            │                                               │
+  ├───────┼─────────────────────────────────────────┼───────────────────────────────────────────────┤
+  │ HI-07 │ Admin PATCH silently discards images    │ Images deleted + recreated in transaction     │
+  └───────┴─────────────────────────────────────────┴───────────────────────────────────────────────┘
+
+  Test results

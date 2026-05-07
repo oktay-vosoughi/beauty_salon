@@ -1,0 +1,27 @@
+.card {
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--color-bg-light);
+  padding: 2.5rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.title {
+  font-size: 1.75rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--color-dark);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}

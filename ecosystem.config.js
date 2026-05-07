@@ -1,0 +1,40 @@
+module.exports = {
+  apps: [
+    {
+      name: "guzellik-api",
+      cwd: "./apps/api",
+      script: "npx",
+      args: "tsx src/index.ts",
+      interpreter: "none",
+      env_production: {
+        NODE_ENV: "production",
+        PORT: "4000",
+      },
+      watch: false,
+      max_memory_restart: "512M",
+      error_file: "../../logs/api-error.log",
+      out_file: "../../logs/api-out.log",
+      merge_logs: true,
+      restart_delay: 3000,
+      max_restarts: 10,
+    },
+    {
+      name: "guzellik-web",
+      cwd: "./apps/web",
+      script: "node",
+      args: ".next/standalone/server.js",
+      env_production: {
+        NODE_ENV: "production",
+        PORT: "3000",
+        HOSTNAME: "0.0.0.0",
+      },
+      watch: false,
+      max_memory_restart: "512M",
+      error_file: "../../logs/web-error.log",
+      out_file: "../../logs/web-out.log",
+      merge_logs: true,
+      restart_delay: 3000,
+      max_restarts: 10,
+    },
+  ],
+};

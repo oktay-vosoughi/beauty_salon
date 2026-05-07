@@ -1,0 +1,33 @@
+.wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--color-muted);
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.iframeWrap {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.iframe {
+  width: 100%;
+  min-height: 600px;
+  display: block;
+}
+
+.center {
+  text-align: center;
+  padding: 4rem 0;
+}

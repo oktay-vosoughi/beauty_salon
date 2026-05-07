@@ -1,0 +1,148 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link "✦ Güzellik Merkezi" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - list [ref=e5]:
+        - listitem [ref=e6]:
+          - link "Ana Sayfa" [ref=e7] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=e8]:
+          - link "Ürünler" [ref=e9] [cursor=pointer]:
+            - /url: /urunler
+        - listitem [ref=e10]:
+          - link "İletişim" [ref=e11] [cursor=pointer]:
+            - /url: /iletisim
+        - listitem [ref=e12]:
+          - link "Sepet" [ref=e13] [cursor=pointer]:
+            - /url: /sepet
+        - listitem [ref=e14]:
+          - link "Giriş Yap" [ref=e15] [cursor=pointer]:
+            - /url: /giris
+  - main [ref=e16]:
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - heading "Ürünlerimiz" [level=2] [ref=e20]
+        - paragraph [ref=e21]: Profesyonel güzellik ürünlerini keşfedin
+      - paragraph [ref=e22]: 24 ürün listeleniyor
+      - generic [ref=e23]:
+        - link "Oud Unisex Parfüm — 30ml Parfüm & Deodorant Oud Unisex Parfüm — 30ml ₺279,90" [ref=e24] [cursor=pointer]:
+          - /url: /urunler/oud-unisex-parfum
+          - img "Oud Unisex Parfüm — 30ml" [ref=e26]
+          - generic [ref=e27]:
+            - generic [ref=e28]: Parfüm & Deodorant
+            - heading "Oud Unisex Parfüm — 30ml" [level=3] [ref=e29]
+            - paragraph [ref=e30]: ₺279,90
+        - link "Bergamot Koku Seti Parfüm & Deodorant Bergamot Koku Seti ₺399,90" [ref=e31] [cursor=pointer]:
+          - /url: /urunler/bergamot-koku-kiti
+          - img "Bergamot Koku Seti" [ref=e33]
+          - generic [ref=e34]:
+            - generic [ref=e35]: Parfüm & Deodorant
+            - heading "Bergamot Koku Seti" [level=3] [ref=e36]
+            - paragraph [ref=e37]: ₺399,90
+        - link "Gül Esansı Parfümü — 50ml Parfüm & Deodorant Gül Esansı Parfümü — 50ml ₺349,90" [ref=e38] [cursor=pointer]:
+          - /url: /urunler/gul-esans-parfum
+          - img "Gül Esansı Parfümü — 50ml" [ref=e40]
+          - generic [ref=e41]:
+            - generic [ref=e42]: Parfüm & Deodorant
+            - heading "Gül Esansı Parfümü — 50ml" [level=3] [ref=e43]
+            - paragraph [ref=e44]: ₺349,90
+        - link "Doğal Göz Kalemi Makyaj Doğal Göz Kalemi ₺89,90" [ref=e45] [cursor=pointer]:
+          - /url: /urunler/göz-kalemi-siyah-liner
+          - img "Doğal Göz Kalemi" [ref=e47]
+          - generic [ref=e48]:
+            - generic [ref=e49]: Makyaj
+            - heading "Doğal Göz Kalemi" [level=3] [ref=e50]
+            - paragraph [ref=e51]: ₺89,90
+        - link "SPF 50 BB Krem Makyaj SPF 50 BB Krem ₺199,90" [ref=e52] [cursor=pointer]:
+          - /url: /urunler/spf50-bb-krem
+          - img "SPF 50 BB Krem" [ref=e54]
+          - generic [ref=e55]:
+            - generic [ref=e56]: Makyaj
+            - heading "SPF 50 BB Krem" [level=3] [ref=e57]
+            - paragraph [ref=e58]: ₺199,90
+        - link "Doğal Maskara — Jet Siyah Makyaj Doğal Maskara — Jet Siyah ₺129,90" [ref=e59] [cursor=pointer]:
+          - /url: /urunler/dogal-maskara-siyah
+          - img "Doğal Maskara — Jet Siyah" [ref=e61]
+          - generic [ref=e62]:
+            - generic [ref=e63]: Makyaj
+            - heading "Doğal Maskara — Jet Siyah" [level=3] [ref=e64]
+            - paragraph [ref=e65]: ₺129,90
+        - link "Organik Ruj Makyaj Organik Ruj ₺119,90" [ref=e66] [cursor=pointer]:
+          - /url: /urunler/organik-ruj-koleksiyonu
+          - img "Organik Ruj" [ref=e68]
+          - generic [ref=e69]:
+            - generic [ref=e70]: Makyaj
+            - heading "Organik Ruj" [level=3] [ref=e71]
+            - paragraph [ref=e72]: ₺119,90
+        - link "Doğal Mineral Allık Makyaj Doğal Mineral Allık ₺159,90" [ref=e73] [cursor=pointer]:
+          - /url: /urunler/dogal-allık
+          - img "Doğal Mineral Allık" [ref=e75]
+          - generic [ref=e76]:
+            - generic [ref=e77]: Makyaj
+            - heading "Doğal Mineral Allık" [level=3] [ref=e78]
+            - paragraph [ref=e79]: ₺159,90
+        - link "Bebek Gibi Vücut Kremi Vücut Bakımı Bebek Gibi Vücut Kremi ₺89,00" [ref=e80] [cursor=pointer]:
+          - /url: /urunler/bebek-gibi-vücut-kremi
+          - img "Bebek Gibi Vücut Kremi" [ref=e82]
+          - generic [ref=e83]:
+            - generic [ref=e84]: Vücut Bakımı
+            - heading "Bebek Gibi Vücut Kremi" [level=3] [ref=e85]
+            - paragraph [ref=e86]: ₺89,00
+        - link "Selülit Karşıtı Masaj Yağı Vücut Bakımı Selülit Karşıtı Masaj Yağı ₺139,90" [ref=e87] [cursor=pointer]:
+          - /url: /urunler/selülit-karşıtı-masaj-yagi
+          - img "Selülit Karşıtı Masaj Yağı" [ref=e89]
+          - generic [ref=e90]:
+            - generic [ref=e91]: Vücut Bakımı
+            - heading "Selülit Karşıtı Masaj Yağı" [level=3] [ref=e92]
+            - paragraph [ref=e93]: ₺139,90
+        - link "Zeytinyağlı Banyo Köpüğü Vücut Bakımı Zeytinyağlı Banyo Köpüğü ₺69,90" [ref=e94] [cursor=pointer]:
+          - /url: /urunler/zeytinyagi-banyo-kopugu
+          - img "Zeytinyağlı Banyo Köpüğü" [ref=e96]
+          - generic [ref=e97]:
+            - generic [ref=e98]: Vücut Bakımı
+            - heading "Zeytinyağlı Banyo Köpüğü" [level=3] [ref=e99]
+            - paragraph [ref=e100]: ₺69,90
+        - link "Kahve Peelingi Vücut Bakımı Kahve Peelingi ₺79,90" [ref=e101] [cursor=pointer]:
+          - /url: /urunler/kahve-peeling-krem
+          - img "Kahve Peelingi" [ref=e103]
+          - generic [ref=e104]:
+            - generic [ref=e105]: Vücut Bakımı
+            - heading "Kahve Peelingi" [level=3] [ref=e106]
+            - paragraph [ref=e107]: ₺79,90
+      - generic [ref=e108]:
+        - generic [ref=e109]: 1 / 2
+        - link "Sonraki →" [ref=e110] [cursor=pointer]:
+          - /url: /urunler?page=2
+  - contentinfo [ref=e111]:
+    - generic [ref=e112]:
+      - generic [ref=e113]:
+        - generic [ref=e114]:
+          - generic [ref=e115]: ✦ Güzellik Merkezi
+          - paragraph [ref=e116]: Profesyonel güzellik ve bakım hizmetleriyle kendinizi şımartın. Doğal ürünler, uzman eller.
+        - generic [ref=e117]:
+          - paragraph [ref=e118]: Bağlantılar
+          - list [ref=e119]:
+            - listitem [ref=e120]:
+              - link "Ana Sayfa" [ref=e121] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e122]:
+              - link "Ürünler" [ref=e123] [cursor=pointer]:
+                - /url: /urunler
+            - listitem [ref=e124]:
+              - link "İletişim" [ref=e125] [cursor=pointer]:
+                - /url: /iletisim
+            - listitem [ref=e126]:
+              - link "Giriş Yap" [ref=e127] [cursor=pointer]:
+                - /url: /giris
+            - listitem [ref=e128]:
+              - link "Kayıt Ol" [ref=e129] [cursor=pointer]:
+                - /url: /kayit
+        - generic [ref=e130]:
+          - paragraph [ref=e131]: İletişim
+          - list [ref=e132]:
+            - listitem [ref=e133]: Bağcılar, İstanbul
+            - listitem [ref=e134]: +90 (212) 000 00 00
+            - listitem [ref=e135]: info@guzellikmerkezi.com.tr
+            - listitem [ref=e136]: "Pzt–Cmt: 09:00–20:00"
+      - paragraph [ref=e138]: © 2026 Güzellik Merkezi. Tüm hakları saklıdır.

@@ -1,0 +1,23 @@
+{
+  "env": {
+    "BASH_MAX_OUTPUT_LENGTH": "150000"
+  },
+  "permissions": {
+    "allow": [
+      "PowerShell(Set-Location \"C:\\\\Users\\\\STREAM\\\\Desktop\\\\niltellioglu\"; \\(Get-ChildItem \"energen-master\" -Force\\).Name)",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\STREAM\\\\Desktop\\\\niltellioglu\\\\energen-master\"; \\(Get-ChildItem \"images\" -Force\\).Name | Select-Object -First 20)",
+      "PowerShell(pnpm *)",
+      "PowerShell(npm install *)",
+      "PowerShell(New-Item *)",
+      "PowerShell(Copy-Item *)"
+    ],
+    "deny": [
+      "Read(node_modules/**)",
+      "Read(.next/**)",
+      "Read(dist/**)",
+      "Read(coverage/**)",
+      "Read(.git/**)",
+      "Read(**/*.lock)"
+    ]
+  }
+}
