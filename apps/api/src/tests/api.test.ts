@@ -111,6 +111,20 @@ describe("Products API", () => {
   });
 });
 
+describe("Categories API", () => {
+  it("GET /api/categories — returns only categories with active products", async () => {
+    const res = await request(app).get("/api/categories");
+    expect(res.status).toBe(200);
+    const slugs = res.body.map((item: { slug: string }) => item.slug);
+    expect(slugs).toContain("cilt-bakim");
+    expect(slugs).toContain("gunes-urunleri");
+    expect(slugs).not.toContain("cilt-bakimi");
+    for (const category of res.body as { _count: { products: number } }[]) {
+      expect(category._count.products).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe("Cart API (authenticated via agent)", () => {
   it("GET /api/cart — 401 without auth", async () => {
     const res = await request(app).get("/api/cart");
