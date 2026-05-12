@@ -31,3 +31,11 @@ export const paymentLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: "Çok fazla şifre sıfırlama denemesi. 15 dakika sonra tekrar deneyin." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

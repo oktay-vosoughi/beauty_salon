@@ -1,20 +1,24 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
+import argon2 from "argon2";
+import crypto from "crypto";
 import app from "../app";
 import { prisma } from "../db/prisma";
 
 const TEST_EMAIL = `test-${Date.now()}@example.com`;
+const TEST_RESET_EMAIL = `reset-${Date.now()}@example.com`;
 const TEST_PASSWORD = "Test1234!";
+const TEST_RESET_PASSWORD = "Reset1234!";
 
 // Persistent agent keeps session cookies between requests
 const agent = request.agent(app);
 
 beforeAll(async () => {
-  await prisma.user.deleteMany({ where: { email: TEST_EMAIL } });
+  await prisma.user.deleteMany({ where: { email: { in: [TEST_EMAIL, TEST_RESET_EMAIL] } } });
 });
 
 afterAll(async () => {
-  await prisma.user.deleteMany({ where: { email: TEST_EMAIL } });
+  await prisma.user.deleteMany({ where: { email: { in: [TEST_EMAIL, TEST_RESET_EMAIL] } } });
   await prisma.$disconnect();
 });
 
@@ -67,6 +71,94 @@ describe("Auth flow", () => {
   it("GET /api/auth/me — 401 without session", async () => {
     const res = await request(app).get("/api/auth/me");
     expect(res.status).toBe(401);
+  });
+
+  it("POST /api/auth/forgot-password — stores reset token before responding", async () => {
+    const passwordHash = await argon2.hash(TEST_PASSWORD, { type: argon2.argon2id });
+    await prisma.user.create({
+      data: {
+        name: "Forgot Kullanıcı",
+        email: TEST_RESET_EMAIL,
+        passwordHash,
+      },
+    });
+
+    const res = await request(app)
+      .post("/api/auth/forgot-password")
+      .send({ email: TEST_RESET_EMAIL });
+
+    expect(res.status).toBe(200);
+
+    const updated = await prisma.user.findUniqueOrThrow({ where: { email: TEST_RESET_EMAIL } });
+    expect(updated.resetPasswordToken).toMatch(/^[a-f0-9]{64}$/);
+    expect(updated.resetPasswordExpires?.getTime()).toBeGreaterThan(Date.now());
+  });
+
+  it("POST /api/auth/forgot-password — returns dev reset link when SMTP is not configured", async () => {
+    const previousEnv = {
+      SMTP_USER: process.env.SMTP_USER,
+      SMTP_PASS: process.env.SMTP_PASS,
+      NODE_ENV: process.env.NODE_ENV,
+    };
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+    process.env.NODE_ENV = "test";
+
+    await prisma.user.deleteMany({ where: { email: TEST_RESET_EMAIL } });
+    const passwordHash = await argon2.hash(TEST_PASSWORD, { type: argon2.argon2id });
+    await prisma.user.create({
+      data: {
+        name: "Dev Reset Kullanıcı",
+        email: TEST_RESET_EMAIL,
+        passwordHash,
+      },
+    });
+
+    try {
+      const res = await request(app)
+        .post("/api/auth/forgot-password")
+        .send({ email: TEST_RESET_EMAIL });
+
+      expect(res.status).toBe(200);
+      expect(res.body.devResetUrl).toMatch(/^http:\/\/localhost:3000\/sifre-sifirla\/[a-f0-9]{64}$/);
+      expect(res.body.message).toContain("SMTP yapılandırılmadı");
+    } finally {
+      if (previousEnv.SMTP_USER === undefined) delete process.env.SMTP_USER;
+      else process.env.SMTP_USER = previousEnv.SMTP_USER;
+      if (previousEnv.SMTP_PASS === undefined) delete process.env.SMTP_PASS;
+      else process.env.SMTP_PASS = previousEnv.SMTP_PASS;
+      if (previousEnv.NODE_ENV === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousEnv.NODE_ENV;
+    }
+  });
+
+  it("POST /api/auth/reset-password — updates password and clears reset token", async () => {
+    await prisma.user.deleteMany({ where: { email: TEST_RESET_EMAIL } });
+    const rawToken = "reset-token-for-test";
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const oldPasswordHash = await argon2.hash(TEST_PASSWORD, { type: argon2.argon2id });
+
+    const user = await prisma.user.create({
+      data: {
+        name: "Reset Kullanıcı",
+        email: TEST_RESET_EMAIL,
+        passwordHash: oldPasswordHash,
+        resetPasswordToken: tokenHash,
+        resetPasswordExpires: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
+
+    const res = await request(app)
+      .post("/api/auth/reset-password")
+      .send({ token: rawToken, password: TEST_RESET_PASSWORD });
+
+    expect(res.status).toBe(200);
+
+    const updated = await prisma.user.findUniqueOrThrow({ where: { id: user.id } });
+    expect(updated.resetPasswordToken).toBeNull();
+    expect(updated.resetPasswordExpires).toBeNull();
+    expect(updated.passwordHash).toBeTruthy();
+    await expect(argon2.verify(updated.passwordHash!, TEST_RESET_PASSWORD)).resolves.toBe(true);
   });
 });
 

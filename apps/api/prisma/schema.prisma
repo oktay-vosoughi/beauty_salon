@@ -33,13 +33,16 @@ enum ReviewStatus {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  name         String
-  email        String    @unique @db.VarChar(191)
-  passwordHash String
-  role         Role      @default(USER)
-  phone        String?
-  createdAt    DateTime  @default(now())
+  id                   Int       @id @default(autoincrement())
+  name                 String
+  email                String    @unique @db.VarChar(191)
+  passwordHash         String?
+  googleId             String?   @unique @db.VarChar(191)
+  role                 Role      @default(USER)
+  phone                String?
+  resetPasswordToken   String?   @db.VarChar(64)
+  resetPasswordExpires DateTime?
+  createdAt            DateTime  @default(now())
 
   addresses Address[]
   cart      Cart?
@@ -107,11 +110,12 @@ model Product {
 }
 
 model ProductImage {
-  id        Int    @id @default(autoincrement())
-  productId Int
-  url       String
-  alt       String
-  sortOrder Int    @default(0)
+  id          Int     @id @default(autoincrement())
+  productId   Int
+  url         String
+  alt         String
+  sortOrder   Int     @default(0)
+  blurDataUrl String? @db.Text
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 

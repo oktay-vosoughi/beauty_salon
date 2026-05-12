@@ -9,7 +9,7 @@ import ProductGallery from "./ProductGallery";
 import ReviewSection from "./ReviewSection";
 import styles from "./page.module.css";
 
-interface ProductImage { url: string; alt: string }
+interface ProductImage { url: string; alt: string; blurDataUrl?: string | null }
 interface Review {
   id: number;
   rating: number;
@@ -31,6 +31,19 @@ interface Product {
 
 const API = process.env.API_BASE_URL ?? "http://localhost:4000";
 const WEB = getSiteUrl();
+
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(`${API}/api/products?limit=100`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.items ?? []).map((p: { slug: string }) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
+
+export const revalidate = 60;
 
 function absoluteUrl(url: string) {
   if (url.startsWith("http://") || url.startsWith("https://")) return url;

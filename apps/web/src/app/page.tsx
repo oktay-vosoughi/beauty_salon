@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Hero from "@/components/layout/Hero";
 import styles from "./page.module.css";
 import Link from "next/link";
@@ -39,7 +40,32 @@ const categories = [
   },
 ];
 
-export default function HomePage() {
+interface FeaturedProduct {
+  id: number;
+  slug: string;
+  title: string;
+  price: string;
+  category: { name: string };
+  images: { url: string; alt: string; blurDataUrl?: string | null }[];
+}
+
+async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
+  const apiBase = process.env.API_BASE_URL ?? "http://localhost:4000";
+  try {
+    const res = await fetch(`${apiBase}/api/products?limit=4`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.items ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const featured = await getFeaturedProducts();
+
   return (
     <>
       <Hero />
@@ -67,7 +93,16 @@ export default function HomePage() {
       </section>
 
       {/* Hakkımızda */}
-      <section className={`section ${styles.about}`} style={{ backgroundImage: "url('/intro.jpg')" }}>
+      <section className={`section ${styles.about}`}>
+        <Image
+          src="/intro.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+          style={{ objectFit: "cover", objectPosition: "center" }}
+          loading="lazy"
+          quality={80}
+        />
         <div className={styles.aboutOverlay} />
         <div className="container">
           <div className={styles.aboutContent}>
@@ -91,19 +126,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Öne Çıkan Ürünler placeholder */}
+      {/* Öne Çıkan Ürünler */}
       <section className={`section ${styles.featured}`}>
         <div className="container">
           <div className="section-title">
             <h2>Öne Çıkan Ürünler</h2>
             <p>Cilt bakım ve kozmetik kategorilerinde öne çıkan Niltellioglu ürünleri</p>
           </div>
-          <div className={styles.productsPlaceholder}>
-            <p>Ürünler yükleniyor…</p>
-            <Link href="/urunler" className="btn btn-primary" style={{ marginTop: "1rem" }}>
-              Tüm Ürünler
-            </Link>
-          </div>
+
+          {featured.length > 0 ? (
+            <>
+              <div className={styles.featuredGrid}>
+                {featured.map((p, index) => {
+                  const imgUrl = p.images[0]?.url ?? "/placeholder.jpg";
+                  const blur = p.images[0]?.blurDataUrl;
+                  // First card is likely above the fold — preload it.
+                  const isFirst = index === 0;
+                  return (
+                    <Link key={p.id} href={`/urunler/${p.slug}`} className={styles.featuredCard}>
+                      <div className={styles.featuredImgWrap}>
+                        <Image
+                          src={imgUrl}
+                          alt={p.images[0]?.alt ?? p.title}
+                          fill
+                          sizes="(max-width: 480px) 100vw, (max-width: 900px) 50vw, 25vw"
+                          style={{ objectFit: "cover" }}
+                          priority={isFirst}
+                          loading={isFirst ? undefined : "lazy"}
+                          placeholder={blur ? "blur" : "empty"}
+                          blurDataURL={blur ?? undefined}
+                        />
+                      </div>
+                      <div className={styles.featuredBody}>
+                        <span className={styles.featuredCat}>{p.category.name}</span>
+                        <h3 className={styles.featuredTitle}>{p.title}</h3>
+                        <p className={styles.featuredPrice}>
+                          {Number(p.price).toLocaleString("tr-TR", { style: "currency", currency: "TRY" })}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+              <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
+                <Link href="/urunler" className="btn btn-primary">
+                  Tüm Ürünleri Gör
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className={styles.productsPlaceholder}>
+              <Link href="/urunler" className="btn btn-primary">
+                Tüm Ürünler
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </>

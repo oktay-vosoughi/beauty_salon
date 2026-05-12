@@ -1,9 +1,19 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import AdminLogoutButton from "./AdminLogoutButton";
 import styles from "./layout.module.css";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = headers().get("x-pathname") ?? "";
+
+  // Let the login page through without an auth check — otherwise we'd create
+  // an infinite redirect loop (/admin/* → /admin/login → auth check → /admin/login → …).
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
+
+  // Server-side authentication for all other admin pages.
   const cookieStore = cookies();
   const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join("; ");
   const apiBase = process.env.API_BASE_URL ?? "http://localhost:4000";
@@ -13,11 +23,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       headers: { Cookie: cookieHeader },
       cache: "no-store",
     });
-    if (!res.ok) redirect("/giris");
+    if (!res.ok) redirect("/admin/login");
     const data = (await res.json()) as { user: { role: string } };
     if (data.user?.role !== "ADMIN") redirect("/");
   } catch {
-    redirect("/giris");
+    redirect("/admin/login");
   }
 
   return (
@@ -34,6 +44,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </nav>
         <div className={styles.navBottom}>
           <Link href="/" className={styles.siteLink}>← Siteye Dön</Link>
+          <AdminLogoutButton />
         </div>
       </aside>
       <main className={styles.main}>{children}</main>

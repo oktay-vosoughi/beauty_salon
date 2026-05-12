@@ -50,3 +50,308 @@ Review + Fix Summary
   └───────┴─────────────────────────────────────────┴───────────────────────────────────────────────┘
 
   Test results
+
+
+  ============================================================
+  Update — Admin Product Management Fix (later same day)
+  ============================================================
+
+  Reported issue
+    /admin/urunler/25 showed the public "404 Sayfa Bulunamadı" page (with public Navbar/Footer)
+    instead of opening an admin edit screen. Admin could not add or edit products from the UI.
+
+  Root cause
+    apps/web/src/app/admin/urunler/AdminProductsClient.tsx linked to /admin/urunler/[id] and
+    /admin/urunler/yeni, but neither route file existed. Next.js fell through to the global
+    app/not-found.tsx which is rendered with the public root layout (Navbar + Footer).
+
+  Files created
+    - apps/web/src/app/admin/urunler/yeni/page.tsx               → "Yeni Ürün" page
+    - apps/web/src/app/admin/urunler/[id]/page.tsx               → edit route, validates numeric id
+    - apps/web/src/app/admin/urunler/[id]/EditProductClient.tsx  → fetches product, handles
+                                                                   404/401/403 inside admin shell
+    - apps/web/src/app/admin/urunler/ProductForm.tsx             → shared create/edit form,
+                                                                   client-side validation mirrors
+                                                                   server Zod schema, slug
+                                                                   auto-generation, dynamic image
+                                                                   rows, loading/success/error
+    - apps/web/src/app/admin/urunler/form.module.css             → responsive form styles
+                                                                   (2-col → 1-col ≤640px)
+    - apps/web/src/app/admin/not-found.tsx                       → admin-scoped 404 keeps the
+                                                                   admin layout for unknown
+                                                                   /admin/* URLs
+
+  Files modified
+    - CLAUDE.md  → appended "Review Notes — 2026-05-07" section with routes, commands, manual
+                   test checklist, responsiveness notes, and remaining recommendations.
+
+  Admin product features now working from the UI
+    - List products (existing).
+    - Create product (title, slug auto + override, description, price Decimal, stock, category,
+      isActive, multiple image URL/alt rows).
+    - Edit product (prefilled via GET /api/admin/products/:id, PATCH on save; image set
+      replaced atomically in a Prisma transaction — already supported server-side).
+    - Soft delete via existing DELETE /api/admin/products/:id (sets isActive=false).
+    - Graceful in-admin error for unknown ids (e.g. /admin/urunler/9999) — no public 404.
+
+  Security verification (no regressions)
+    - apps/web/src/app/admin/layout.tsx still server-side checks /api/auth/me with forwarded
+      cookies → redirects non-authenticated to /giris and non-ADMIN to /. Applies to every
+      /admin/* page, including the new ones.
+    - apps/api/src/app.ts mounts every admin router behind requireAdmin middleware
+      (apps/api/src/middleware/auth.ts) → server-side enforcement on every admin API call.
+      UI hiding is not relied on.
+
+  Database
+    - No schema changes needed. Existing Product/ProductImage/Category models cover all fields.
+
+  Routes reference (admin, ADMIN role only)
+    /admin, /admin/urunler, /admin/urunler/yeni, /admin/urunler/[id],
+    /admin/siparisler, /admin/yorumlar.
+
+  Manual test checklist
+    1. Login as admin@guzellikmerkezi.com.tr / Admin1234! at /giris.
+    2. /admin/urunler lists 25 seeded products.
+    3. + Yeni Ürün → submit valid form → redirects to /admin/urunler/<newId>.
+    4. Düzenle → change price/category → save → "Ürün güncellendi.".
+    5. Visit /admin/urunler/25 directly → loads existing product (no 404).
+    6. Visit /admin/urunler/9999 → in-admin error card, not public 404.
+    7. Logout → /admin/* → redirected to /giris.
+    8. Non-admin user → /admin/* → redirected to /.
+
+  Responsiveness
+    - Admin sidebar already collapses ≤768px.
+    - New form grid 2-col → 1-col ≤640px; image rows 3-col → 1-col ≤640px.
+    - Action buttons wrap on narrow viewports.
+
+  Remaining recommendations (out of scope)
+    - Hide public Navbar/Footer on /admin/* for cleaner admin chrome.
+    - Add image upload pipeline (Cloudinary already allow-listed in next.config.mjs).
+    - Add Playwright e2e covering admin create/edit/delete.
+
+
+  ============================================================
+  Update — Admin Image Upload from Computer (later same day)
+  ============================================================
+
+  Feature
+    Admin can now upload product images directly from their computer (no manual URL needed).
+    Files are stored on the API server's disk and are physically deleted when the admin removes
+    them from a product or replaces them on save.
+
+  How it works
+    - New API route: POST /api/admin/uploads (multipart "file") → stores under
+      apps/api/uploads/products/<timestamp>-<uuid>.<ext>, returns { url, filename }.
+      url is a relative path "/uploads/products/<filename>".
+    - New API route: DELETE /api/admin/uploads/:filename → removes the file from disk.
+      Path traversal is blocked (basename + regex check + resolved-path containment check).
+    - Both routes are mounted behind requireAdmin middleware in apps/api/src/app.ts.
+    - apps/api/src/app.ts also serves the uploads folder publicly read-only at /uploads
+      (express.static with maxAge: 7d). Writes are admin-only via the upload route.
+    - apps/web/next.config.mjs gains a /uploads/:path* rewrite to the API so images load
+      same-origin from the web app (no CORS, no remotePatterns hassle).
+    - apps/api/src/routes/admin/products.ts image-URL validator now accepts either an
+      absolute http(s) URL or a relative "/uploads/..." path (max 500 chars).
+
+  Validation & limits
+    - Max file size: 5 MB (multer).
+    - Allowed mime types: image/jpeg, image/png, image/webp, image/avif, image/gif.
+    - Filenames are server-generated (timestamp + UUID); original names never reach disk.
+
+  UI changes (apps/web/src/app/admin/urunler/ProductForm.tsx + form.module.css)
+    - Each image row now has: thumbnail preview, URL input, alt input, "Yükle" button
+      (file picker), and "Sil" button.
+    - Yükle uploads instantly and writes the resulting "/uploads/..." URL into the row.
+    - Replacing an image (re-uploading into a row that already has an unsaved upload)
+      cleans up the previous file server-side automatically.
+    - Sil deletes the physical file when the URL is one of our uploads (with confirm prompt).
+    - On save (edit mode), any *originally-saved* upload URL that was removed from the form
+      is best-effort deleted from disk so we don't leak files (matches the API's
+      replace-all image strategy).
+    - Responsive: 84px preview + inputs + actions on desktop; collapses to single column
+      with a 160px-tall preview ≤640px.
+
+  Files created
+    - apps/api/src/routes/admin/uploads.ts
+
+  Files modified
+    - apps/api/package.json                              → +multer, +@types/multer
+    - apps/api/src/app.ts                                → static /uploads + new admin route
+    - apps/api/src/routes/admin/products.ts              → image URL validator relaxed
+    - apps/web/next.config.mjs                           → /uploads rewrite
+    - apps/web/src/app/admin/urunler/ProductForm.tsx     → file upload + delete-on-remove
+    - apps/web/src/app/admin/urunler/form.module.css     → image row layout w/ preview
+    - .gitignore                                         → ignore apps/api/uploads/
+
+  Setup step required after pulling
+    Run: pnpm install   (installs multer + @types/multer)
+    Then: pnpm --filter @niltellioglu/api dev
+          pnpm --filter @niltellioglu/web dev
+
+  Manual test
+    1. Login as admin, open /admin/urunler/yeni.
+    2. + Görsel Ekle → click "Yükle" → choose a JPG/PNG → preview appears, URL field
+       fills with "/uploads/products/...".
+    3. Save the product → image is reachable at /urunler/<slug> on the public site.
+    4. Re-open in admin, click "Sil" on the image row → file is removed from
+       apps/api/uploads/products/ on disk.
+    5. Try uploading a 6 MB file → blocked with "Dosya 5 MB'dan büyük olamaz.".
+    6. Try uploading a .pdf → blocked with "Desteklenmeyen dosya türü.".
+    7. As non-admin, POST /api/admin/uploads → 403.
+
+  Security notes
+    - DELETE filename is validated as a basename matching [A-Za-z0-9._-]+ and is
+      additionally checked to resolve inside the products dir → no path traversal.
+    - Static /uploads is read-only; only the admin route can write/delete.
+    - File extension is chosen from the validated mime, not from the user-supplied filename.
+
+
+  ============================================================
+  Update — Product Gallery, Upload Security, and Frontend QA
+  ============================================================
+
+  Context
+    Follow-up work after admin product editing exposed two practical issues:
+    1. Public product detail pages received multiple images from the API but only displayed
+       the first image as the main product image.
+    2. Admin uploads accepted files based on client-provided multipart MIME type only.
+
+  Public product gallery
+    - Product detail pages now support multiple product photos with an interactive gallery.
+    - Users can switch photos by clicking thumbnails or by using previous/next controls.
+    - The gallery displays an image counter such as "1 / 2" and highlights the active
+      thumbnail.
+    - The product detail route already returned all images from
+      GET /api/products/:slug; no API change was needed for the public detail page.
+    - Product listing pages still intentionally request and render only the first image as
+      the card thumbnail.
+
+  Files created
+    - apps/web/src/app/urunler/[slug]/ProductGallery.tsx
+
+  Files modified
+    - apps/web/src/app/urunler/[slug]/page.tsx
+        Replaced the static first-image markup with ProductGallery.
+    - apps/web/src/app/urunler/[slug]/page.module.css
+        Added gallery layout, active thumbnail styling, horizontal thumbnail scroll,
+        arrow controls, and image counter styling.
+    - apps/web/src/app/urunler/page.tsx
+        Added priority={index === 0} to the first product card image to satisfy the
+        Next.js LCP warning found during frontend QA.
+
+  Admin upload security hardening
+    Finding:
+      POST /api/admin/uploads trusted the multipart Content-Type/MIME metadata. A non-image
+      payload could be uploaded into the publicly served /uploads/products directory by
+      labeling it as image/png.
+
+    Fix:
+      - apps/api/src/routes/admin/uploads.ts now validates the actual file signature after
+        multer writes the file.
+      - Supported signatures: JPEG, PNG, WEBP, AVIF, GIF.
+      - If the signature does not match the declared allowed MIME type, the uploaded file is
+        immediately deleted and the API returns 415 with "Dosya geçerli bir görsel değil."
+      - Existing filename generation, file size limit, path traversal protection, and
+        requireAdmin mounting remain in place.
+
+  Security tests added
+    - apps/api/src/tests/uploads.security.test.ts
+        1. Rejects fake "<script>" bytes submitted as image/png.
+        2. Accepts a minimal valid PNG upload and removes the uploaded test file.
+
+  Security validation
+    - Pre-fix reproducer:
+        pnpm --filter @niltellioglu/api exec vitest run src/tests/uploads.security.test.ts
+        Result before fix: failed because fake image/png returned 201.
+    - Post-fix focused test:
+        pnpm --filter @niltellioglu/api exec vitest run src/tests/uploads.security.test.ts
+        Result: 2 passed.
+    - Full API test suite:
+        pnpm --filter @niltellioglu/api run test
+        Result: 22 passed.
+    - API typecheck:
+        pnpm --filter @niltellioglu/api run typecheck
+        Result: passed.
+    - API lint:
+        pnpm --filter @niltellioglu/api run lint
+        Result: could not run because eslint is not installed/available in the API workspace.
+
+  Frontend QA
+    Browser plugin was not available in the Codex session, so regular Playwright was used.
+
+    Existing repo e2e:
+      pnpm test:e2e
+      Result: 8 passed.
+
+    Additional temporary QA harness:
+      - Temporary script: C:\tmp\frontend-qa-niltellioglu.mjs
+      - Screenshots: C:\tmp\niltellioglu-frontend-qa\
+      - These are intentionally outside the repo and are not source artifacts.
+
+    Covered flows:
+      - Desktop home page renders and has correct title.
+      - Mobile nav menu opens and shows scoped navigation links.
+      - Product listing renders product cards.
+      - Product detail renders and gallery next control changes "1 / 2" to "2 / 2".
+      - Add-to-cart while logged out redirects to /giris.
+      - Wrong login credentials show the Turkish auth error.
+      - Register page form renders.
+      - Unauthenticated cart shows empty-cart state after hydration.
+      - Contact form submits and shows "Mesajınız başarıyla gönderildi!".
+      - Admin login with seeded admin reaches /admin.
+      - Admin product list and new-product form render.
+      - Relevant console errors/warnings: clean after the LCP priority fix.
+
+  Local dev environment notes
+    - Port conflicts:
+        Next.js uses 3000 and API uses 4000. If EADDRINUSE appears, stop the process
+        currently listening on that port before restarting pnpm dev.
+    - argon2 on Windows:
+        If the API fails with missing argon2.node, rebuild the native dependency from the
+        API workspace:
+          pnpm --filter @niltellioglu/api rebuild argon2
+        Validation:
+          pnpm --filter @niltellioglu/api exec node -e "require('argon2'); console.log('argon2 ok')"
+
+  Current known limitations / follow-up
+    - Payment flow was not fully tested in browser QA.
+    - Admin product creation form was rendered but not submitted during QA to avoid creating
+      extra test products in the live local database.
+    - Browser QA covered Chromium only, not Firefox/Safari.
+    - The seeded product "oud-unisex-parfum" currently has two images and was used to verify
+      the gallery switching behavior.
+
+
+
+
+• Implemented the public migration into the current Next.js design.
+
+  What changed:
+
+  - Migrated 27 public Ntbeauty/Niltellioglu products into the Prisma seed with categories, prices,
+    descriptions, slugs, stock defaults, active status, and local fallback images.
+  - Added Niltellioglu brand/site SEO helpers, Turkish metadata, canonical URLs, OG/Twitter metadata,
+    product JSON-LD, sitemap and robots updates.
+  - Added category SEO routes under /kategori/[slug].
+  - Added legal/static pages under /yasal/*: KVKK, Çerez Politikası, Üyelik Sözleşmesi, Mesafeli Satış
+    Sözleşmesi, Gizlilik ve Güvenlik Politikası, Tüketici Hakları/Cayma/İptal/İade.
+  - Updated footer/contact/navbar content to Niltellioglu and info@niltellioglu.com.
+  - Skipped blog content as requested.
+
+  Verification:
+
+  - pnpm --filter @niltellioglu/api run test -> 24 passed.
+  - pnpm --filter @niltellioglu/web run typecheck -> passed.
+  - pnpm --filter @niltellioglu/web run build -> passed, with the existing Next font warning.
+  - WEB_BASE_URL=http://localhost:3003 pnpm test:e2e -> 10 passed.
+  - Production smoke on http://localhost:3004/urunler/sos-krem -> 200, product title present, JSON-LD p
+    resent.
+
+  Screenshots saved:
+
+  - C:/tmp/niltellioglu-home.png
+  - C:/tmp/niltellioglu-products.png
+  - C:/tmp/niltellioglu-kvkk-mobile.png
+
+  I committed the migration work in separate slices on main. The worktree still has unrelated existing
+  changes, plus playwright-report/index.html was regenerated by the E2E run and left uncommitted.

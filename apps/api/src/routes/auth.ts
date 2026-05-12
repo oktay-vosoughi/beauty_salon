@@ -1,8 +1,10 @@
 import { Router } from "express";
 import argon2 from "argon2";
+import crypto from "crypto";
 import { z } from "zod";
 import { prisma } from "../db/prisma";
-import { loginLimiter, registerLimiter } from "../middleware/rateLimit";
+import { loginLimiter, registerLimiter, forgotPasswordLimiter } from "../middleware/rateLimit";
+import { sendPasswordResetEmail } from "../lib/email";
 import type { AuthSession } from "../middleware/auth";
 
 const router = Router();
@@ -69,6 +71,11 @@ router.post("/login", loginLimiter, async (req, res, next) => {
       return;
     }
 
+    if (!user.passwordHash) {
+      res.status(401).json({ error: "Bu hesap Google ile oluşturulmuştur. Google ile giriş yapınız." });
+      return;
+    }
+
     const valid = await argon2.verify(user.passwordHash, password);
     if (!valid) {
       res.status(401).json({ error: "E-posta veya şifre hatalı" });
@@ -121,6 +128,204 @@ router.get("/me", async (req, res, next) => {
     }
 
     res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Forgot Password ---
+
+router.post("/forgot-password", forgotPasswordLimiter, async (req, res, next) => {
+  try {
+    const email = z.string().email().toLowerCase().safeParse(req.body?.email);
+    if (!email.success) {
+      res.status(400).json({ error: "Geçerli bir e-posta adresi girin." });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: email.data } });
+    let devResetUrl: string | undefined;
+
+    if (user?.passwordHash) {
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+      const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { resetPasswordToken: tokenHash, resetPasswordExpires: expires },
+      });
+
+      const webBase = process.env.WEB_BASE_URL ?? "http://localhost:3000";
+      const resetUrl = `${webBase}/sifre-sifirla/${rawToken}`;
+
+      try {
+        const delivery = await sendPasswordResetEmail(user.email, user.name, resetUrl);
+        if (delivery.status === "development" && process.env.NODE_ENV !== "production") {
+          devResetUrl = delivery.resetUrl;
+        }
+      } catch (err) {
+        console.error("Password reset email failed:", err);
+      }
+    }
+
+    // Always respond OK to avoid user enumeration.
+    if (devResetUrl) {
+      res.json({
+        ok: true,
+        message: "SMTP yapılandırılmadı. Geliştirme ortamı için sıfırlama bağlantısı oluşturuldu.",
+        devResetUrl,
+      });
+      return;
+    }
+
+    res.json({ ok: true, message: "E-posta gönderildi. Lütfen gelen kutunuzu kontrol edin." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/reset-password", async (req, res, next) => {
+  try {
+    const schema = z.object({
+      token: z.string().min(1),
+      password: z.string().min(8).max(128),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Geçersiz istek." });
+      return;
+    }
+
+    const { token, password } = parsed.data;
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await prisma.user.findFirst({
+      where: {
+        resetPasswordToken: tokenHash,
+        resetPasswordExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      res.status(400).json({ error: "Sıfırlama bağlantısı geçersiz veya süresi dolmuş." });
+      return;
+    }
+
+    const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash, resetPasswordToken: null, resetPasswordExpires: null },
+    });
+
+    // Invalidate all existing sessions for this user
+    await prisma.session.deleteMany({ where: { userId: user.id } });
+
+    res.json({ ok: true, message: "Şifreniz başarıyla güncellendi. Giriş yapabilirsiniz." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Google OAuth 2.0 ---
+
+router.get("/google", (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) {
+    res.status(503).json({ error: "Google ile giriş şu an kullanılabilir değil." });
+    return;
+  }
+
+  const webBase = process.env.WEB_BASE_URL ?? "http://localhost:3000";
+  const callbackUrl = `${webBase}/api/auth/google/callback`;
+
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: callbackUrl,
+    response_type: "code",
+    scope: "openid email profile",
+    access_type: "offline",
+    prompt: "select_account",
+  });
+
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+});
+
+router.get("/google/callback", async (req, res, next) => {
+  try {
+    const code = typeof req.query.code === "string" ? req.query.code : null;
+    const webBase = process.env.WEB_BASE_URL ?? "http://localhost:3000";
+
+    if (!code) {
+      res.redirect(`${webBase}/giris?error=google_cancelled`);
+      return;
+    }
+
+    const callbackUrl = `${webBase}/api/auth/google/callback`;
+
+    // Exchange code for access token
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID ?? "",
+        client_secret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+        redirect_uri: callbackUrl,
+        grant_type: "authorization_code",
+      }),
+    });
+
+    const tokenData = await tokenRes.json() as { access_token?: string; error?: string };
+    if (!tokenData.access_token) {
+      console.error("Google token exchange failed:", tokenData.error);
+      res.redirect(`${webBase}/giris?error=google_failed`);
+      return;
+    }
+
+    // Get user profile
+    const profileRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+    const profile = await profileRes.json() as { id?: string; email?: string; name?: string };
+
+    if (!profile.id || !profile.email) {
+      res.redirect(`${webBase}/giris?error=google_failed`);
+      return;
+    }
+
+    const googleId = profile.id;
+    const email = profile.email.toLowerCase();
+    const name = profile.name ?? email.split("@")[0];
+
+    // Find existing user by googleId or email, then link/create
+    let user = await prisma.user.findFirst({
+      where: { OR: [{ googleId }, { email }] },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: { googleId, email, name },
+      });
+    } else if (!user.googleId) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { googleId },
+      });
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      req.session.regenerate((err) => {
+        if (err) return reject(err);
+        const sess = req.session as AuthSession;
+        sess.userId = user!.id;
+        sess.userRole = user!.role;
+        resolve();
+      });
+    });
+
+    res.redirect(`${webBase}/hesabim`);
   } catch (err) {
     next(err);
   }

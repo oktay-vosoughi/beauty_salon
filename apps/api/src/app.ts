@@ -1,6 +1,8 @@
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
+import compression from "compression";
+import path from "path";
 import { sessionMiddleware } from "./middleware/session";
 import healthRouter from "./routes/health";
 import authRouter from "./routes/auth";
@@ -14,12 +16,22 @@ import contactRouter from "./routes/contact";
 import adminProductsRouter from "./routes/admin/products";
 import adminOrdersRouter from "./routes/admin/orders";
 import adminReviewsRouter from "./routes/admin/reviews";
+import adminUploadsRouter from "./routes/admin/uploads";
 import { requireAdmin } from "./middleware/auth";
 import { errorHandler } from "./middleware/error";
 
 const app = express();
 
 app.set("trust proxy", 1);
+
+// Gzip compress all responses (JSON APIs, HTML etc.) except already-compressed images.
+app.use(compression({
+  filter: (req, res) => {
+    const ct = res.getHeader("Content-Type");
+    if (typeof ct === "string" && /^image\//i.test(ct)) return false;
+    return compression.filter(req, res);
+  },
+}));
 
 app.use(helmet());
 app.use(
@@ -31,6 +43,18 @@ app.use(
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);
+
+// Serve uploaded product images. UUID-based filenames are immutable so we cache for 1 year.
+// In production with Nginx, configure Nginx to serve /uploads directly from disk to skip this hop.
+app.use(
+  "/uploads",
+  express.static(path.resolve(process.cwd(), "uploads"), {
+    fallthrough: true,
+    maxAge: "365d",
+    immutable: true,
+    index: false,
+  })
+);
 
 app.use("/api/health", healthRouter);
 app.use("/api/auth", authRouter);
@@ -46,6 +70,7 @@ app.use("/api/contact", contactRouter);
 app.use("/api/admin/products", requireAdmin, adminProductsRouter);
 app.use("/api/admin/orders", requireAdmin, adminOrdersRouter);
 app.use("/api/admin/reviews", requireAdmin, adminReviewsRouter);
+app.use("/api/admin/uploads", requireAdmin, adminUploadsRouter);
 
 app.use(errorHandler);
 

@@ -1,9 +1,18 @@
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./Hero.module.css";
 
 export default function Hero() {
   return (
     <section className={styles.hero}>
+      <Image
+        src="/hero-bg.png"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        style={{ objectFit: "cover", objectPosition: "center" }}
+      />
       <div className={styles.overlay} />
       <div className={styles.content}>
         <div className={styles.icon}>✦</div>

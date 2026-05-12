@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
+import { cacheDelPattern } from "../../lib/cache";
 
 const router = Router();
 
@@ -12,7 +13,23 @@ const productSchema = z.object({
   stock: z.number().int().min(0),
   isActive: z.boolean().default(true),
   categoryId: z.number().int().positive(),
-  images: z.array(z.object({ url: z.string().url(), alt: z.string(), sortOrder: z.number().int() })).optional(),
+  images: z
+    .array(
+      z.object({
+        url: z
+          .string()
+          .min(1)
+          .max(500)
+          .refine(
+            (v) => v.startsWith("/uploads/") || /^https?:\/\//i.test(v),
+            "Görsel URL geçersiz."
+          ),
+        alt: z.string(),
+        sortOrder: z.number().int(),
+        blurDataUrl: z.string().nullable().optional(),
+      })
+    )
+    .optional(),
 });
 
 router.get("/", async (req, res, next) => {
@@ -67,6 +84,7 @@ router.post("/", async (req, res, next) => {
       },
       include: { images: true },
     });
+    await cacheDelPattern("products:*");
     res.status(201).json(product);
   } catch (err: unknown) {
     if ((err as { code?: string }).code === "P2002") {
@@ -101,6 +119,7 @@ router.patch("/:id", async (req, res, next) => {
         include: { images: true },
       });
     });
+    await cacheDelPattern("products:*");
     res.json(product);
   } catch (err) {
     next(err);
@@ -114,6 +133,7 @@ router.delete("/:id", async (req, res, next) => {
       where: { id: Number(req.params.id) },
       data: { isActive: false },
     });
+    await cacheDelPattern("products:*");
     res.json({ ok: true });
   } catch (err) {
     next(err);

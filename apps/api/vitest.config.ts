@@ -9,6 +9,8 @@ export default defineConfig({
   test: {
     environment: "node",
     globalSetup: ["./src/tests/setup.ts"],
+    include: ["src/**/*.test.ts"],
+    exclude: ["dist/**", "node_modules/**"],
   },
   resolve: {
     alias: { "@": resolve(__dirname, "src") },

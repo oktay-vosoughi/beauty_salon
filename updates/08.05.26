@@ -1,0 +1,94 @@
+ ---
+  What Was Done
+
+  Critical Fixes (Implemented)
+
+  ┌──────────────┬─────────────────────────────────────────┬────────────────────────────────────────┐
+  │     Area     │                 Change                  │                 Impact                 │
+  ├──────────────┼─────────────────────────────────────────┼────────────────────────────────────────┤
+  │              │ Replaced Google Fonts <link> with       │ Eliminates render-blocking external    │
+  │ Fonts        │ next/font/google                        │ request; fonts self-hosted and         │
+  │              │                                         │ preloaded                              │
+  ├──────────────┼─────────────────────────────────────────┼────────────────────────────────────────┤
+  │              │ background-image: url(hero-bg.png) →    │ Next.js now preloads, converts to      │
+  │ Hero LCP     │ <Image fill priority>                   │ AVIF/WebP, and generates responsive    │
+  │              │                                         │ variants                               │
+  ├──────────────┼─────────────────────────────────────────┼────────────────────────────────────────┤
+  │ Image        │ Added sharp — converts all uploads to   │ Reduces source image size 3–10×;       │
+  │ uploads      │ WebP (max 1200px, quality 85)           │ speeds up Next.js image optimizer      │
+  │              │                                         │ first-run                              │
+  ├──────────────┼─────────────────────────────────────────┼────────────────────────────────────────┤
+  │              │ Upload static: maxAge: 7d → 365d +      │ Browsers stop re-fetching images on    │
+  │ Image cache  │ immutable; Next.js image cache: 60s →   │ every visit                            │
+  │              │ 24h                                     │                                        │
+  ├──────────────┼─────────────────────────────────────────┼────────────────────────────────────────┤
+  │ API          │ Added compression (gzip) middleware to  │ All JSON/HTML API responses now        │
+  │ compression  │ Express                                 │ compressed; typical 60–80% size        │
+  │              │                                         │ reduction                              │
+  └──────────────┴─────────────────────────────────────────┴────────────────────────────────────────┘
+
+  Quick Wins (Implemented)
+
+  ┌─────────────────┬────────────────────────────────────────────────┬─────────────────────────────┐
+  │      Area       │                     Change                     │           Impact            │
+  ├─────────────────┼────────────────────────────────────────────────┼─────────────────────────────┤
+  │                 │ Featured products section fetches real         │ SEO content on homepage; no │
+  │ Homepage        │ products via SSR instead of showing a          │  loading spinner needed     │
+  │                 │ placeholder                                    │                             │
+  ├─────────────────┼────────────────────────────────────────────────┼─────────────────────────────┤
+  │                 │ Added generateStaticParams to product detail   │ All 27 product pages        │
+  │ Static pages    │ pages                                          │ pre-rendered as static HTML │
+  │                 │                                                │  at build time              │
+  ├─────────────────┼────────────────────────────────────────────────┼─────────────────────────────┤
+  │ API headers     │ Products list/detail now send Cache-Control:   │ CDN/Nginx can cache API     │
+  │                 │ public, max-age=60, stale-while-revalidate=300 │ responses                   │
+  ├─────────────────┼────────────────────────────────────────────────┼─────────────────────────────┤
+  │ Skeleton        │ Animated shimmer loading states for /urunler   │ Perceived performance       │
+  │ loaders         │ and /urunler/[slug]                            │ improved; no blank page     │
+  │                 │                                                │ flash                       │
+  ├─────────────────┼────────────────────────────────────────────────┼─────────────────────────────┤
+  │ Gallery         │ Added loading="lazy" to product gallery thumbs │ Defers off-screen thumbnail │
+  │ thumbnails      │                                                │  requests                   │
+  ├─────────────────┼────────────────────────────────────────────────┼─────────────────────────────┤
+  │ Admin           │ <a> → <Link> in admin dashboard                │ Client-side navigation (no  │
+  │ navigation      │                                                │ full page reload)           │
+  ├─────────────────┼────────────────────────────────────────────────┼─────────────────────────────┤
+  │                 │ Added explicit deviceSizes, imageSizes,        │ Proper responsive image     │
+  │ next.config.mjs │ minimumCacheTTL: 86400, cache headers for      │ variants, longer image      │
+  │                 │ static assets                                  │ caching                     │
+  └─────────────────┴────────────────────────────────────────────────┴─────────────────────────────┘
+What was already done ✅
+
+  - Lazy loading — loading="lazy" on thumbnails
+  - Sharp compression — WebP conversion at upload
+
+  What's now implemented
+
+  1. Serve images directly
+  - New uploads write to apps/web/public/uploads/products/ — Next.js serves them directly, no proxy hop
+  - Old images fall back through the existing rewrite to the API (backward compatible)
+  - Removed localhost from remotePatterns (no longer needed for local images)
+  - Configurable via UPLOADS_DIR env var for production deploys
+
+  2. Blur placeholders
+  - Upload route now generates a 10×10 WebP blur (~100–200 bytes) and returns it as a base64 blurDataUrl
+  - blurDataUrl field added to ProductImage DB table (migration applied:
+  20260508113553_add_blur_data_url)
+  - placeholder="blur" + blurDataURL wired to every <Image> on the home page, product listing, and
+  product detail gallery
+
+  3. Preload critical images
+  - Home page: first featured product card uses priority (emits <link rel="preload">)
+  - Product listing: already had priority={index === 0} — added loading="lazy" for the rest for
+  consistency
+  - Product detail: already had priority on the main image
+
+  4. Redis lazy caching
+  - ioredis installed with lazy connect, offline queue disabled, 2s connect timeout — gracefully
+  degrades if Redis isn't running
+  - Product list (GET /api/products) and detail (GET /api/products/:slug) cached for 60s
+  - Admin create/patch/delete invalidates all products:* keys immediately
+  - Zero impact if Redis is down — falls back to direct DB
+
+  ▎ One step needed: Stop the dev server and restart it (pnpm dev) — Windows won't let Prisma regenerate
+  ▎  the client while the DLL is in use. The migration is already applied to the DB.

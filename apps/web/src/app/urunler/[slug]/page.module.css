@@ -21,7 +21,9 @@
   align-items: start;
 }
 
-.gallery {}
+.gallery {
+  min-width: 0;
+}
 
 .mainImgWrap {
   position: relative;
@@ -29,13 +31,15 @@
   aspect-ratio: 1 / 1;
   border-radius: 8px;
   overflow: hidden;
+  background: #f5f1ed;
 }
 
 .thumbs {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.75rem;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
 }
 
 .thumbWrap {
@@ -47,9 +51,59 @@
   cursor: pointer;
   border: 2px solid transparent;
   flex-shrink: 0;
+  padding: 0;
+  background: transparent;
 }
 
-.thumbWrap:hover { border-color: var(--color-primary); }
+.thumbWrap:hover,
+.thumbWrapActive {
+  border-color: var(--color-primary);
+}
+
+.galleryButton {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 2rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+}
+
+.galleryButton:hover {
+  background: #fff;
+  color: var(--color-primary);
+}
+
+.galleryButtonPrev {
+  left: 0.75rem;
+}
+
+.galleryButtonNext {
+  right: 0.75rem;
+}
+
+.galleryCounter {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 2;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 0.45rem 0.65rem;
+}
 
 .info {
   display: flex;

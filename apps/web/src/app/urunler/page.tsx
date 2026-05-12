@@ -15,6 +15,7 @@ export const metadata: Metadata = buildMetadata({
 interface ProductImage {
   url: string;
   alt: string;
+  blurDataUrl?: string | null;
 }
 
 interface Product {
@@ -75,6 +76,7 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
             <div className={styles.grid}>
               {items.map((p, index) => {
                 const imgUrl = p.images[0]?.url ?? "/images/placeholder.jpg";
+                const blur = p.images[0]?.blurDataUrl;
                 return (
                   <Link key={p.id} href={`/urunler/${p.slug}`} className={styles.card}>
                     <div className={styles.imgWrap}>
@@ -85,6 +87,9 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
                         sizes="(max-width: 480px) 100vw, (max-width: 900px) 50vw, 25vw"
                         style={{ objectFit: "cover" }}
                         priority={index === 0}
+                        loading={index === 0 ? undefined : "lazy"}
+                        placeholder={blur ? "blur" : "empty"}
+                        blurDataURL={blur ?? undefined}
                       />
                     </div>
                     <div className={styles.body}>

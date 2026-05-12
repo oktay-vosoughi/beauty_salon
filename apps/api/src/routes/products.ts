@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../db/prisma";
+import { cacheGet, cacheSet } from "../lib/cache";
 
 const router = Router();
 
@@ -9,6 +10,14 @@ router.get("/", async (req, res, next) => {
     const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 12));
     const categoryId = req.query.categoryId ? Number(req.query.categoryId) : undefined;
     const search = typeof req.query.search === "string" ? req.query.search : undefined;
+
+    const cacheKey = `products:list:${page}:${limit}:${categoryId ?? ""}:${search ?? ""}`;
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+      res.json(JSON.parse(cached));
+      return;
+    }
 
     const where = {
       isActive: true,
@@ -37,7 +46,11 @@ router.get("/", async (req, res, next) => {
       }),
     ]);
 
-    res.json({ items, total, page, limit, pages: Math.ceil(total / limit) });
+    const result = { items, total, page, limit, pages: Math.ceil(total / limit) };
+    await cacheSet(cacheKey, JSON.stringify(result), 60);
+
+    res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+    res.json(result);
   } catch (err) {
     next(err);
   }
@@ -45,6 +58,14 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:slug", async (req, res, next) => {
   try {
+    const cacheKey = `products:detail:${req.params.slug}`;
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+      res.json(JSON.parse(cached));
+      return;
+    }
+
     const product = await prisma.product.findUnique({
       where: { slug: req.params.slug, isActive: true },
       include: {
@@ -64,6 +85,9 @@ router.get("/:slug", async (req, res, next) => {
       return;
     }
 
+    await cacheSet(cacheKey, JSON.stringify(product), 60);
+
+    res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     res.json(product);
   } catch (err) {
     next(err);

@@ -15,6 +15,11 @@ function Stars({ n }: { n: number }) {
   return <span className={styles.stars}>{"★".repeat(n)}{"☆".repeat(5 - n)}</span>;
 }
 
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  return `${String(d.getUTCDate()).padStart(2, "0")}.${String(d.getUTCMonth() + 1).padStart(2, "0")}.${d.getUTCFullYear()}`;
+}
+
 export default function ReviewSection({ productId, initialReviews }: { productId: number; initialReviews: Review[] }) {
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [rating, setRating] = useState(5);
@@ -63,7 +68,7 @@ export default function ReviewSection({ productId, initialReviews }: { productId
               <div className={styles.meta}>
                 <Stars n={r.rating} />
                 <span className={styles.author}>{r.user.name}</span>
-                <span className={styles.date}>{new Date(r.createdAt).toLocaleDateString("tr-TR")}</span>
+                <span className={styles.date}>{formatDate(r.createdAt)}</span>
               </div>
               <p className={styles.comment}>{r.comment}</p>
             </div>

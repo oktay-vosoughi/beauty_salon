@@ -69,6 +69,27 @@
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
+.logoutBtn {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.logoutBtn:hover {
+  background: rgba(220, 53, 69, 0.2);
+  color: #ff8a8a;
+  border-color: rgba(220, 53, 69, 0.4);
+}
+
 .main {
   flex: 1;
   margin-left: 220px;
