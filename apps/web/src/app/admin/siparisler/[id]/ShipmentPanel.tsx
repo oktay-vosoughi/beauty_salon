@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styles from "./detail.module.css";
 
 interface Shipment {
@@ -38,7 +38,7 @@ export default function ShipmentPanel({ orderId }: { orderId: number }) {
   const [labelLoading, setLabelLoading] = useState(false);
   const [labelError, setLabelError] = useState("");
 
-  async function loadShipment() {
+  const loadShipment = useCallback(async function loadShipment() {
     setLoading(true);
     setError("");
     try {
@@ -53,9 +53,9 @@ export default function ShipmentPanel({ orderId }: { orderId: number }) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [orderId]);
 
-  useEffect(() => { loadShipment(); }, [orderId]);
+  useEffect(() => { loadShipment(); }, [loadShipment]);
 
   async function handleCreate() {
     setCreating(true);
