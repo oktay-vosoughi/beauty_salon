@@ -18,6 +18,7 @@ import adminOrdersRouter from "./routes/admin/orders";
 import adminReviewsRouter from "./routes/admin/reviews";
 import adminUploadsRouter from "./routes/admin/uploads";
 import adminShipmentsRouter from "./routes/admin/shipments";
+import adminSettingsRouter from "./routes/admin/settings";
 import { requireAdmin } from "./middleware/auth";
 import { errorHandler } from "./middleware/error";
 
@@ -73,6 +74,7 @@ app.use("/api/admin/orders", requireAdmin, adminOrdersRouter);
 app.use("/api/admin/orders/:orderId/shipment", requireAdmin, adminShipmentsRouter);
 app.use("/api/admin/reviews", requireAdmin, adminReviewsRouter);
 app.use("/api/admin/uploads", requireAdmin, adminUploadsRouter);
+app.use("/api/admin/settings", requireAdmin, adminSettingsRouter);
 
 app.use(errorHandler);
 

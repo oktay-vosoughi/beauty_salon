@@ -75,6 +75,11 @@
 
 ## Remaining Tasks
 
+### UX polish — Header account and basket state
+- [x] Navbar shows `Hesabım` instead of `Giriş Yap` when `/api/auth/me` has an active session.
+- [x] `/hesabim` provides an in-app `Çıkış Yap` action that logs out and redirects cleanly.
+- [x] Navbar `Sepet` link shows a quantity badge based on the current cart item quantities and updates after adding products.
+
 ### M7 — Finish PayTR wiring
 - [x] **M7-3** — Mount paymentsRouter in index.ts: `app.use("/api/payments", paymentsRouter)`
 - [ ] **M7-4** — Fill PAYTR_MERCHANT_ID, PAYTR_MERCHANT_KEY, PAYTR_MERCHANT_SALT in .env
@@ -105,6 +110,16 @@
 - [x] **M10-5** — ecosystem.config.js — PM2 config for web (:3000) + api (:4000)
 - [x] **M10-6** — deploy/nginx.conf — reverse proxy + HTTPS + security headers
 - [x] **M10-7** — deploy/DEPLOYMENT.md — full deployment checklist with backups, PayTR go-live, security audit
+
+### PayTR Admin Settings (NEW — 2026-05-13)
+- [x] `SiteSetting` Prisma model added + `prisma db push` applied
+- [x] `apps/api/src/utils/encryption.ts` — AES-256-GCM encrypt/decrypt (SETTINGS_ENCRYPTION_KEY)
+- [x] `apps/api/src/services/settings.ts` — settings service with 5-min cache + .env fallback
+- [x] `GET/PATCH /api/admin/settings/paytr` — admin-gated, partial update, never exposes raw secrets
+- [x] `apps/api/src/routes/payments.ts` — reads PayTR credentials dynamically per-request (was module-level constants)
+- [x] `/admin/ayarlar` — frontend settings page with show/hide toggles, status badge, live mode warning
+- [x] Admin sidebar updated with "Ayarlar" link
+- [x] `SETTINGS_ENCRYPTION_KEY` added to `.env` and `.env.example`
 
 ### Extra (completed beyond original scope)
 - [x] /urunler/page.tsx — live product listing with pagination + next/image

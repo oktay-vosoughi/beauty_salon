@@ -314,3 +314,47 @@ The `.next` build cache was stale/corrupted — likely left over from a previous
 - No automated e2e for admin CRUD yet — `e2e/smoke.spec.ts` covers public flow only. Worth adding a Playwright spec that logs in as admin and exercises create/edit/delete.
 - API admin product PATCH replaces the entire image set when `images` is sent. The form always sends `images` (possibly empty array) — acceptable, but be aware deleting all rows clears them.
 
+---
+
+## Review Notes — 2026-05-13 (PayTR Admin Settings)
+
+### Objective
+Allow admin to configure PayTR API credentials from the admin panel without editing `.env` or restarting the server.
+
+### Files Created
+- `apps/api/src/utils/encryption.ts` — AES-256-GCM encrypt/decrypt using `SETTINGS_ENCRYPTION_KEY`
+- `apps/api/src/services/settings.ts` — settings service; 5-min in-memory cache; DB-first with `.env` fallback
+- `apps/api/src/routes/admin/settings.ts` — `GET/PATCH /api/admin/settings/paytr`; partial update; never returns raw secrets
+- `apps/web/src/app/admin/ayarlar/page.tsx` — server component
+- `apps/web/src/app/admin/ayarlar/PayTRSettingsClient.tsx` — client form with show/hide toggles, status badge, live-mode warning
+- `apps/web/src/app/admin/ayarlar/page.module.css` — styles
+
+### Files Modified
+- `apps/api/prisma/schema.prisma` — added `SiteSetting` model; applied via `prisma db push`
+- `apps/api/src/app.ts` — mounted `adminSettingsRouter` at `/api/admin/settings` behind `requireAdmin`
+- `apps/api/src/routes/payments.ts` — removed module-level `MERCHANT_*` constants; reads `getPayTRCredentials()` per-request inside both `/paytr/token` and `/paytr/callback` handlers
+- `apps/web/src/app/admin/layout.tsx` — added "Ayarlar" sidebar link
+- `.env` — added auto-generated `SETTINGS_ENCRYPTION_KEY`
+- `.env.example` — documented `SETTINGS_ENCRYPTION_KEY`
+
+### Security Design
+- Merchant Key and Salt are encrypted with AES-256-GCM before DB storage
+- Master encryption key lives only in `.env` (`SETTINGS_ENCRYPTION_KEY`)
+- GET endpoint returns `hasMerchantKey/hasMerchantSalt` booleans — never raw values
+- All settings routes are behind `requireAdmin`
+- `.env` fallback keeps existing deployments working if DB settings are not yet configured
+
+### DB Change
+```prisma
+model SiteSetting {
+  key       String   @id @db.VarChar(191)
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+```
+
+### Build Results
+- TypeScript API: 0 errors
+- TypeScript Web: 0 errors
+- `prisma db push` applied successfully
+

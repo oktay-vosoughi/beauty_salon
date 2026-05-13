@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAppState } from "@/components/state/AppStateProvider";
 
 export default function AddToCartButton({ productId, inStock }: { productId: number; inStock: boolean }) {
   const router = useRouter();
+  const { setCart } = useAppState();
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -27,6 +29,8 @@ export default function AddToCartButton({ productId, inStock }: { productId: num
         setMsg(d.error ?? "Hata oluştu");
         return;
       }
+      const cart = await res.json();
+      setCart(cart);
       setMsg("Sepete eklendi ✓");
     } catch {
       setMsg("Bağlantı hatası");

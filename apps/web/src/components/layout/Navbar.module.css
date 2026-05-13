@@ -64,8 +64,9 @@
   background: var(--color-primary);
   color: #fff;
   border-radius: 50%;
-  width: 18px;
+  min-width: 18px;
   height: 18px;
+  padding: 0 0.3rem;
   font-size: 0.7rem;
   display: flex;
   align-items: center;

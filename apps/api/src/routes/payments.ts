@@ -4,19 +4,17 @@ import { prisma } from "../db/prisma";
 import { requireUser } from "../middleware/auth";
 import { paymentLimiter } from "../middleware/rateLimit";
 import { getPayTRToken, verifyPayTRCallback } from "../services/paytr";
+import { getPayTRCredentials } from "../services/settings";
 import * as ke from "../services/kargoEntegrator";
 import type { AuthSession } from "../middleware/auth";
 
 const router = Router();
 
-const MERCHANT_ID = process.env.PAYTR_MERCHANT_ID ?? "";
-const MERCHANT_KEY = process.env.PAYTR_MERCHANT_KEY ?? "";
-const MERCHANT_SALT = process.env.PAYTR_MERCHANT_SALT ?? "";
-const TEST_MODE = process.env.PAYTR_TEST_MODE ?? "1";
 const WEB_BASE_URL = process.env.WEB_BASE_URL ?? "http://localhost:3000";
 
 router.post("/paytr/token", requireUser, paymentLimiter, async (req, res, next) => {
   try {
+    const { merchantId, merchantKey, merchantSalt, testMode } = await getPayTRCredentials();
     const userId = (req.session as AuthSession).userId!;
     const orderId = Number(req.body.orderId);
     if (!orderId || isNaN(orderId)) {
@@ -76,9 +74,9 @@ router.post("/paytr/token", requireUser, paymentLimiter, async (req, res, next) 
     const userAddress = `${shippingAddr.line1}, ${shippingAddr.district}, ${shippingAddr.city} ${shippingAddr.postalCode}`;
 
     const token = await getPayTRToken({
-      merchantId: MERCHANT_ID,
-      merchantKey: MERCHANT_KEY,
-      merchantSalt: MERCHANT_SALT,
+      merchantId,
+      merchantKey,
+      merchantSalt,
       merchantOid,
       email: order.user.email,
       paymentAmount: paymentAmountKurus,
@@ -90,7 +88,7 @@ router.post("/paytr/token", requireUser, paymentLimiter, async (req, res, next) 
       userPhone: order.user.phone ?? shippingAddr.phone ?? "",
       userBasket,
       userIp,
-      testMode: TEST_MODE,
+      testMode,
       debugOn: process.env.NODE_ENV === "development" ? "1" : "0",
       okUrl: `${WEB_BASE_URL}/odeme/sonuc?status=success&orderId=${orderId}`,
       failUrl: `${WEB_BASE_URL}/odeme/sonuc?status=fail&orderId=${orderId}`,
@@ -112,8 +110,9 @@ router.post("/paytr/token", requireUser, paymentLimiter, async (req, res, next) 
 router.post("/paytr/callback", async (req, res, next) => {
   try {
     const params = req.body as Record<string, string>;
+    const { merchantKey, merchantSalt } = await getPayTRCredentials();
 
-    if (!verifyPayTRCallback(params, MERCHANT_KEY, MERCHANT_SALT)) {
+    if (!verifyPayTRCallback(params, merchantKey, merchantSalt)) {
       console.error("PayTR callback hash verification failed", params);
       res.status(400).send("HASH_ERROR");
       return;

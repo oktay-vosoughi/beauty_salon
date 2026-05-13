@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useAppState } from "@/components/state/AppStateProvider";
 import { site } from "@/lib/site";
 import styles from "./Navbar.module.css";
 
@@ -14,7 +15,9 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { authStatus, cartQuantity } = useAppState();
   const [open, setOpen] = useState(false);
+  const signedIn = authStatus === "authenticated";
 
   return (
     <nav className={styles.nav}>
@@ -47,11 +50,16 @@ export default function Navbar() {
           <li>
             <Link href="/sepet" className={styles.cartLink} onClick={() => setOpen(false)}>
               Sepet
+              {cartQuantity > 0 && (
+                <span className={styles.cartBadge} aria-label={`Sepette ${cartQuantity} ürün`}>
+                  {cartQuantity}
+                </span>
+              )}
             </Link>
           </li>
           <li>
-            <Link href="/giris" onClick={() => setOpen(false)}>
-              Giriş Yap
+            <Link href={signedIn ? "/hesabim" : "/giris"} onClick={() => setOpen(false)}>
+              {signedIn ? "Hesabım" : "Giriş Yap"}
             </Link>
           </li>
         </ul>

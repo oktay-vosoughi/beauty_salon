@@ -9,7 +9,10 @@
       "PowerShell(pnpm *)",
       "PowerShell(npm install *)",
       "PowerShell(New-Item *)",
-      "PowerShell(Copy-Item *)"
+      "PowerShell(Copy-Item *)",
+      "WebFetch(domain:documenter.getpostman.com)",
+      "Bash(dir C:UsersSTREAMDesktopniltellioglu *)",
+      "Bash(xargs ls -la)"
     ],
     "deny": [
       "Read(node_modules/**)",

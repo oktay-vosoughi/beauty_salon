@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAppState } from "@/components/state/AppStateProvider";
 import styles from "./page.module.css";
 
 interface CartItem {
@@ -25,6 +26,7 @@ interface Cart {
 
 export default function SepetClient() {
   const router = useRouter();
+  const { setCart: setSharedCart } = useAppState();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,17 +41,19 @@ export default function SepetClient() {
       const res = await fetch("/api/cart", { credentials: "include" });
       if (res.status === 401) {
         setCart(null);
+        setSharedCart(null);
         setLoading(false);
         return;
       }
       const data = await res.json();
       setCart(data);
+      setSharedCart(data);
     } catch {
       setError("Sepet yüklenemedi");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setSharedCart]);
 
   useEffect(() => { fetchCart(); }, [fetchCart]);
 
@@ -61,12 +65,20 @@ export default function SepetClient() {
       credentials: "include",
       body: JSON.stringify({ quantity }),
     });
-    if (res.ok) setCart(await res.json());
+    if (res.ok) {
+      const updatedCart = await res.json();
+      setCart(updatedCart);
+      setSharedCart(updatedCart);
+    }
   }
 
   async function removeItem(itemId: number) {
     const res = await fetch(`/api/cart/items/${itemId}`, { method: "DELETE", credentials: "include" });
-    if (res.ok) setCart(await res.json());
+    if (res.ok) {
+      const updatedCart = await res.json();
+      setCart(updatedCart);
+      setSharedCart(updatedCart);
+    }
   }
 
   async function handleCheckout(e: React.FormEvent) {

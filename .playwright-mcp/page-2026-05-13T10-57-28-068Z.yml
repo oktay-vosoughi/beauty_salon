@@ -1,0 +1,158 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link "✦ Niltellioglu" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - button "Menüyü aç/kapat" [ref=e5]: ☰
+      - list [ref=e6]:
+        - listitem [ref=e7]:
+          - link "Ana Sayfa" [ref=e8] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=e9]:
+          - link "Ürünler" [ref=e10] [cursor=pointer]:
+            - /url: /urunler
+        - listitem [ref=e11]:
+          - link "İletişim" [ref=e12] [cursor=pointer]:
+            - /url: /iletisim
+        - listitem [ref=e13]:
+          - link "Sepet" [ref=e14] [cursor=pointer]:
+            - /url: /sepet
+        - listitem [ref=e15]:
+          - link "Giriş Yap" [ref=e16] [cursor=pointer]:
+            - /url: /giris
+  - main [ref=e17]:
+    - generic [ref=e19]:
+      - generic [ref=e20]: ✦
+      - heading "Niltellioglu Cilt Bakım ve Kozmetik" [level=1] [ref=e21]
+      - paragraph [ref=e22]: Nil Tellioğlu Beauty ürün seçkisiyle cilt bakım, makyaj ve kozmetik rutininizi sade ve güvenli bir alışveriş deneyimiyle tamamlayın.
+      - generic [ref=e23]:
+        - link "Ürünleri İncele" [ref=e24] [cursor=pointer]:
+          - /url: /urunler
+        - link "İletişime Geç" [ref=e25] [cursor=pointer]:
+          - /url: /iletisim
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - heading "Kategoriler" [level=2] [ref=e29]
+        - paragraph [ref=e30]: Cilt bakım ve kozmetik rutininiz için Niltellioglu seçkisini keşfedin
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - generic [ref=e33]: 🌿
+          - heading "Cilt Bakım" [level=3] [ref=e34]
+          - paragraph [ref=e35]: Serum, peeling ve günlük bakım ürünleri
+          - link "İncele" [ref=e36] [cursor=pointer]:
+            - /url: /kategori/cilt-bakim
+        - generic [ref=e37]:
+          - generic [ref=e38]: ☀️
+          - heading "Güneş Ürünleri" [level=3] [ref=e39]
+          - paragraph [ref=e40]: SPF ve ışıltılı vücut bakım ürünleri
+          - link "İncele" [ref=e41] [cursor=pointer]:
+            - /url: /kategori/gunes-urunleri
+        - generic [ref=e42]:
+          - generic [ref=e43]: 💄
+          - heading "Lip & Cheek" [level=3] [ref=e44]
+          - paragraph [ref=e45]: Dudak ve yanak için çok amaçlı renkler
+          - link "İncele" [ref=e46] [cursor=pointer]:
+            - /url: /kategori/lip-cheek
+        - generic [ref=e47]:
+          - generic [ref=e48]: ✨
+          - heading "Makyaj" [level=3] [ref=e49]
+          - paragraph [ref=e50]: Concealer, göz farı ve multi-pen ürünleri
+          - link "İncele" [ref=e51] [cursor=pointer]:
+            - /url: /kategori/makyaj
+    - generic [ref=e54]:
+      - heading "Neden Bizi Seçmelisiniz?" [level=2] [ref=e55]
+      - paragraph [ref=e56]: Niltellioglu, Nil Tellioğlu Beauty ürün seçkisini modern ve güvenli bir online alışveriş deneyimiyle sunar. Cilt bakım, makyaj ve kozmetik ürünlerini net içerik bilgisi ve sade alışveriş akışıyla inceleyebilirsiniz.
+      - list [ref=e57]:
+        - listitem [ref=e58]: ✓ Çekmeköy İstanbul merkezli marka bilgisi
+        - listitem [ref=e59]: ✓ Cilt bakım ve kozmetik odaklı ürün seçkisi
+        - listitem [ref=e60]: ✓ Güvenli ödeme ve sipariş altyapısı
+        - listitem [ref=e61]: ✓ KVKK, iade ve satış koşulları açıkça erişilebilir
+      - link "Alışverişe Başla" [ref=e62] [cursor=pointer]:
+        - /url: /urunler
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - heading "Öne Çıkan Ürünler" [level=2] [ref=e66]
+        - paragraph [ref=e67]: Cilt bakım ve kozmetik kategorilerinde öne çıkan Niltellioglu ürünleri
+      - generic [ref=e68]:
+        - link "GÖZ FARI MOONLIGHT Göz Makyajı GÖZ FARI MOONLIGHT ₺550,00" [ref=e69] [cursor=pointer]:
+          - /url: /urunler/goz-fari-moonlight
+          - img "GÖZ FARI MOONLIGHT" [ref=e70]
+          - generic [ref=e71]:
+            - text: Göz Makyajı
+            - heading "GÖZ FARI MOONLIGHT" [level=3] [ref=e72]
+            - paragraph [ref=e73]: ₺550,00
+        - link "BODY GLOW OIL Vücut Bakımı BODY GLOW OIL ₺1.150,00" [ref=e74] [cursor=pointer]:
+          - /url: /urunler/body-glow-oil
+          - img "BODY GLOW OIL" [ref=e75]
+          - generic [ref=e76]:
+            - text: Vücut Bakımı
+            - heading "BODY GLOW OIL" [level=3] [ref=e77]
+            - paragraph [ref=e78]: ₺1.150,00
+        - link "GOLDEN HOUR Makyaj GOLDEN HOUR ₺350,00" [ref=e79] [cursor=pointer]:
+          - /url: /urunler/golden-hour
+          - img "GOLDEN HOUR" [ref=e80]
+          - generic [ref=e81]:
+            - text: Makyaj
+            - heading "GOLDEN HOUR" [level=3] [ref=e82]
+            - paragraph [ref=e83]: ₺350,00
+        - link "GÖZ FARI SUNSET Göz Makyajı GÖZ FARI SUNSET ₺550,00" [ref=e84] [cursor=pointer]:
+          - /url: /urunler/goz-fari-sunset
+          - img "GÖZ FARI SUNSET" [ref=e85]
+          - generic [ref=e86]:
+            - text: Göz Makyajı
+            - heading "GÖZ FARI SUNSET" [level=3] [ref=e87]
+            - paragraph [ref=e88]: ₺550,00
+      - link "Tüm Ürünleri Gör" [ref=e90] [cursor=pointer]:
+        - /url: /urunler
+  - contentinfo [ref=e91]:
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - generic [ref=e95]: ✦ Niltellioglu
+          - paragraph [ref=e96]: Nil Tellioğlu Beauty seçkisiyle cilt bakım ve kozmetik ürünlerini güvenli alışveriş deneyimiyle keşfedin.
+        - generic [ref=e97]:
+          - paragraph [ref=e98]: Bağlantılar
+          - list [ref=e99]:
+            - listitem [ref=e100]:
+              - link "Ana Sayfa" [ref=e101] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e102]:
+              - link "Ürünler" [ref=e103] [cursor=pointer]:
+                - /url: /urunler
+            - listitem [ref=e104]:
+              - link "İletişim" [ref=e105] [cursor=pointer]:
+                - /url: /iletisim
+            - listitem [ref=e106]:
+              - link "Giriş Yap" [ref=e107] [cursor=pointer]:
+                - /url: /giris
+            - listitem [ref=e108]:
+              - link "Kayıt Ol" [ref=e109] [cursor=pointer]:
+                - /url: /kayit
+        - generic [ref=e110]:
+          - paragraph [ref=e111]: Yasal
+          - list [ref=e112]:
+            - listitem [ref=e113]:
+              - link "KVKK" [ref=e114] [cursor=pointer]:
+                - /url: /yasal/kvkk
+            - listitem [ref=e115]:
+              - link "Çerez Politikası" [ref=e116] [cursor=pointer]:
+                - /url: /yasal/cerez-politikasi
+            - listitem [ref=e117]:
+              - link "Üyelik Sözleşmesi" [ref=e118] [cursor=pointer]:
+                - /url: /yasal/uyelik-sozlesmesi
+            - listitem [ref=e119]:
+              - link "Mesafeli Satış Sözleşmesi" [ref=e120] [cursor=pointer]:
+                - /url: /yasal/mesafeli-satis-sozlesmesi
+            - listitem [ref=e121]:
+              - link "Gizlilik ve Güvenlik Politikası" [ref=e122] [cursor=pointer]:
+                - /url: /yasal/gizlilik-ve-guvenlik-politikasi
+            - listitem [ref=e123]:
+              - link "Tüketici Hakları / Cayma / İptal / İade" [ref=e124] [cursor=pointer]:
+                - /url: /yasal/tuketici-haklari-cayma-iptal-iade
+        - generic [ref=e125]:
+          - paragraph [ref=e126]: İletişim
+          - list [ref=e127]:
+            - listitem [ref=e128]: NİLS GÜZELLİK MERK. SAN. VE TİC. LTD. ŞTİ.
+            - listitem [ref=e129]: Merkez Mahallesi Aşuroğlu Sokak No 5 Çekmeköy İstanbul
+            - listitem [ref=e130]: info@niltellioglu.com
+      - paragraph [ref=e132]: © 2026 Niltellioglu. Tüm hakları saklıdır.

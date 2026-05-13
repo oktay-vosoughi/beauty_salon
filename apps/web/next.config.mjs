@@ -26,6 +26,10 @@ const nextConfig = {
     ],
   },
   async headers() {
+    if (process.env.NODE_ENV !== "production") {
+      return [];
+    }
+
     return [
       {
         // Long-lived immutable cache for Next.js static assets (hashed filenames).

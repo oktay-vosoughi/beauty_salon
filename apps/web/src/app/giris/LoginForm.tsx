@@ -3,11 +3,13 @@
 import { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAppState } from "@/components/state/AppStateProvider";
 import styles from "./page.module.css";
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { refreshSession } = useAppState();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -39,6 +41,7 @@ export default function LoginForm() {
         return;
       }
 
+      await refreshSession();
       router.push("/hesabim");
       router.refresh();
     } catch {
