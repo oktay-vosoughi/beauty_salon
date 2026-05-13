@@ -5,7 +5,7 @@ import { prisma } from "../../db/prisma";
 const router = Router();
 
 const statusSchema = z.object({
-  status: z.enum(["PENDING", "PAID", "CANCELLED", "REFUNDED"]),
+  status: z.enum(["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]),
 });
 
 router.get("/", async (req, res, next) => {
@@ -14,7 +14,9 @@ router.get("/", async (req, res, next) => {
     const limit = Math.min(50, Number(req.query.limit) || 20);
     const status = typeof req.query.status === "string" ? req.query.status : undefined;
 
-    const where = status ? { status: status as "PENDING" | "PAID" | "CANCELLED" | "REFUNDED" } : {};
+    const where = status
+      ? { status: status as "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "REFUNDED" }
+      : {};
 
     const [total, items] = await Promise.all([
       prisma.order.count({ where }),
@@ -45,6 +47,7 @@ router.get("/:id", async (req, res, next) => {
         user: { select: { id: true, name: true, email: true, phone: true } },
         items: { include: { product: { select: { title: true, slug: true } } } },
         payment: true,
+        shipment: true,
       },
     });
     if (!order) { res.status(404).json({ error: "Sipariş bulunamadı" }); return; }

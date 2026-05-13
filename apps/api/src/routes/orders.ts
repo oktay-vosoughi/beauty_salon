@@ -116,6 +116,14 @@ router.get("/", async (req, res, next) => {
       include: {
         items: { include: { product: { select: { title: true, slug: true } } } },
         payment: { select: { status: true, amount: true } },
+        shipment: {
+          select: {
+            trackingNumber: true,
+            status: true,
+            syncedAt: true,
+            cargoCompanyName: true,
+          },
+        },
       },
     });
     res.json(orders);
@@ -132,6 +140,14 @@ router.get("/:id", async (req, res, next) => {
       include: {
         items: { include: { product: { select: { title: true, slug: true, images: { take: 1 } } } } },
         payment: true,
+        shipment: {
+          select: {
+            trackingNumber: true,
+            status: true,
+            syncedAt: true,
+            cargoCompanyName: true,
+          },
+        },
       },
     });
     if (!order) { res.status(404).json({ error: "Sipariş bulunamadı" }); return; }

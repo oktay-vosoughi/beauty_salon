@@ -4,6 +4,7 @@ import { prisma } from "../db/prisma";
 import { requireUser } from "../middleware/auth";
 import { paymentLimiter } from "../middleware/rateLimit";
 import { getPayTRToken, verifyPayTRCallback } from "../services/paytr";
+import * as ke from "../services/kargoEntegrator";
 import type { AuthSession } from "../middleware/auth";
 
 const router = Router();
@@ -157,6 +158,52 @@ router.post("/paytr/callback", async (req, res, next) => {
           data: { status: "PAID" },
         });
         // Stock was already decremented at order creation — no action needed
+      });
+
+      // Auto-create shipment in Kargo Entegratör — non-blocking.
+      // A failure here must never cause the PayTR callback to fail or retry.
+      setImmediate(async () => {
+        try {
+          const fullOrder = await prisma.order.findUnique({
+            where: { id: payment.orderId },
+            include: { items: true, user: true },
+          });
+          if (!fullOrder) return;
+
+          const existing = await prisma.shipment.findUnique({
+            where: { orderId: fullOrder.id },
+          });
+          if (existing) return;
+
+          const keResponse = await ke.createShipment(
+            fullOrder as unknown as ke.OrderForShipment
+          );
+          await prisma.shipment.create({
+            data: {
+              orderId: fullOrder.id,
+              keShipmentId: keResponse.id ?? null,
+              trackingNumber:
+                keResponse.barcode ?? keResponse.tracking_number ?? null,
+              status: keResponse.status ?? "NEW",
+              cargoIntegrationId: parseInt(
+                process.env.KARGO_ENTEGRATOR_CARGO_INTEGRATION_ID ?? "0",
+                10
+              ),
+              rawResponseJson: keResponse as object,
+              syncedAt: new Date(),
+            },
+          });
+          await prisma.order.update({
+            where: { id: fullOrder.id },
+            data: { status: "SHIPPED" },
+          });
+        } catch (err) {
+          console.error(
+            "[KargoEntegratör] Auto-shipment failed for order",
+            payment.orderId,
+            err instanceof Error ? err.message : err
+          );
+        }
       });
     } else {
       await prisma.$transaction(async (tx) => {
