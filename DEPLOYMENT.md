@@ -4,6 +4,17 @@ This guide covers everything required to deploy the `niltellioglu` monorepo (Nex
 
 ---
 
+
+cd /var/www/guzellikmerkezi
+git pull
+pnpm install --frozen-lockfile
+cd apps/api && npx prisma migrate deploy && cd ../..
+pnpm --filter api db:generate
+pnpm --filter web build
+cp -r apps/web/public  apps/web/.next/standalone/apps/web/public
+cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
+pm2 reload all 
+
 ## 1. Server Hosting Requirements
 
 ### Recommended Specifications
@@ -563,3 +574,5 @@ SHOW TABLES LIKE 'Session';
 | Nginx reload | `sudo systemctl reload nginx` |
 | Renew SSL | `sudo certbot renew` |
 | DB backup now | `/home/$USER/backup-db.sh` |
+
+

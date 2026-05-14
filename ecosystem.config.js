@@ -22,7 +22,7 @@ module.exports = {
       name: "guzellik-web",
       cwd: "./apps/web",
       script: "node",
-      args: ".next/standalone/server.js",
+      args: ".next/standalone/apps/web/server.js",
       env_production: {
         NODE_ENV: "production",
         PORT: "3000",

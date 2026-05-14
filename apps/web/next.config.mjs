@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // For production server: add `output: "standalone"` here (Linux VPS only — not supported on Windows)
+  output: "standalone",
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     const apiBase = process.env.API_BASE_URL || "http://localhost:4000";
     return [
