@@ -107,7 +107,14 @@ export async function getPayTRToken(params: PayTRTokenParams): Promise<string> {
     body: body.toString(),
   });
 
-  const data = (await res.json()) as { status: string; token?: string; reason?: string };
+  const rawText = await res.text();
+  console.log("[PayTR] HTTP status:", res.status, "body:", rawText.slice(0, 500));
+  let data: { status: string; token?: string; reason?: string };
+  try {
+    data = JSON.parse(rawText);
+  } catch {
+    throw new Error(`PayTR non-JSON response (HTTP ${res.status}): ${rawText.slice(0, 200)}`);
+  }
 
   if (data.status !== "success" || !data.token) {
     throw new Error(`PayTR token error: ${data.reason ?? "unknown"}`);
