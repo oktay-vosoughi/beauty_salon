@@ -11,12 +11,16 @@ async function getSetting(key: string): Promise<string | null> {
   const cached = cache.get(key);
   if (cached && cached.expiresAt > Date.now()) return cached.value;
 
-  const row = await prisma.siteSetting.findUnique({ where: { key } });
-  if (!row) return null;
-
-  const value = ENCRYPTED_KEYS.has(key) ? decrypt(row.value) : row.value;
-  cache.set(key, { value, expiresAt: Date.now() + CACHE_TTL_MS });
-  return value;
+  try {
+    const row = await prisma.siteSetting.findUnique({ where: { key } });
+    if (!row) return null;
+    const value = ENCRYPTED_KEYS.has(key) ? decrypt(row.value) : row.value;
+    cache.set(key, { value, expiresAt: Date.now() + CACHE_TTL_MS });
+    return value;
+  } catch {
+    // Table may not exist yet (fresh deploy) — fall back to .env
+    return null;
+  }
 }
 
 async function setSetting(key: string, value: string): Promise<void> {
