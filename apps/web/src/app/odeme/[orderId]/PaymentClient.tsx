@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 
+declare global {
+  interface Window {
+    iFrameResize?: (opts: object, target: string) => void;
+  }
+}
+
 export default function PaymentClient({ orderId }: { orderId: string }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,6 +34,28 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     }
     getToken();
   }, [orderId]);
+
+  // PayTR's iframeResizer auto-grows the iframe to its full content height so
+  // the pay button at the bottom is always reachable (the form is taller than
+  // a fixed height, and scrolling="no" prevents internal scrolling).
+  useEffect(() => {
+    if (!token) return;
+    const init = () => window.iFrameResize?.({}, "#paytriframe");
+    if (window.iFrameResize) {
+      init();
+      return;
+    }
+    const existing = document.getElementById("paytr-iframe-resizer");
+    if (existing) {
+      existing.addEventListener("load", init);
+      return;
+    }
+    const s = document.createElement("script");
+    s.id = "paytr-iframe-resizer";
+    s.src = "https://www.paytr.com/js/iframeResizer.min.js";
+    s.onload = init;
+    document.body.appendChild(s);
+  }, [token]);
 
   if (loading) {
     return (
