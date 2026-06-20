@@ -29,6 +29,7 @@ export function buildPayTRHash(params: {
   merchantKey: string;
   merchantSalt: string;
   merchantOid: string;
+  userIp: string;
   email: string;
   paymentAmount: number;
   userBasketStr: string;
@@ -39,14 +40,19 @@ export function buildPayTRHash(params: {
 }): string {
   const {
     merchantId, merchantKey, merchantSalt,
-    merchantOid, email, paymentAmount,
+    merchantOid, userIp, email, paymentAmount,
     userBasketStr, noInstallment, maxInstallment,
     currency, testMode,
   } = params;
 
+  // Official PayTR iFrame API hash order:
+  // merchant_id + user_ip + merchant_oid + email + payment_amount +
+  // user_basket + no_installment + max_installment + currency + test_mode + merchant_salt
   const hashStr = [
     merchantId,
-    params.email,
+    userIp,
+    merchantOid,
+    email,
     paymentAmount,
     userBasketStr,
     noInstallment,
@@ -71,6 +77,7 @@ export async function getPayTRToken(params: PayTRTokenParams): Promise<string> {
     merchantKey: params.merchantKey,
     merchantSalt: params.merchantSalt,
     merchantOid: params.merchantOid,
+    userIp: params.userIp,
     email: params.email,
     paymentAmount: params.paymentAmount,
     userBasketStr,
@@ -131,7 +138,9 @@ export function verifyPayTRCallback(
   const { merchant_oid, status, total_amount, hash } = params;
   if (!merchant_oid || !status || !total_amount || !hash) return false;
 
-  const hashStr = [merchantKey, merchant_oid, total_amount, status, merchantSalt].join("");
+  // Official PayTR callback hash: merchant_oid + merchant_salt + status + total_amount,
+  // HMAC-SHA256 keyed with merchant_key.
+  const hashStr = [merchant_oid, merchantSalt, status, total_amount].join("");
   const expected = createHmac("sha256", merchantKey)
     .update(hashStr)
     .digest("base64");
