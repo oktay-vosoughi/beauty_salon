@@ -21,6 +21,8 @@ export default function HesabimLayout({ children }: { children: React.ReactNode 
                   <li><Link href="/hesabim">Profilim</Link></li>
                   <li><Link href="/hesabim/siparisler">Siparişlerim</Link></li>
                   <li><Link href="/hesabim/odemeler">Ödemelerim</Link></li>
+                  <li><Link href="/hesabim/adreslerim">Adreslerim</Link></li>
+                  <li><Link href="/hesabim/kartlarim">Kayıtlı Kartlarım</Link></li>
                   <li><Link href="/hesabim/yorumlar">Yorumlarım</Link></li>
                 </ul>
               </nav>

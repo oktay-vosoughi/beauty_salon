@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "../db/prisma";
 import { loginLimiter, registerLimiter, forgotPasswordLimiter } from "../middleware/rateLimit";
 import { sendPasswordResetEmail } from "../lib/email";
+import { requireUser } from "../middleware/auth";
 import type { AuthSession } from "../middleware/auth";
 
 const router = Router();
@@ -116,18 +117,86 @@ router.get("/me", async (req, res, next) => {
       return;
     }
 
-    const user = await prisma.user.findUnique({
+    const dbUser = await prisma.user.findUnique({
       where: { id: sess.userId },
-      select: { id: true, name: true, email: true, role: true, phone: true },
+      select: { id: true, name: true, email: true, role: true, phone: true, passwordHash: true },
     });
 
-    if (!user) {
+    if (!dbUser) {
       req.session.destroy(() => {});
       res.status(401).json({ error: "Kullanıcı bulunamadı" });
       return;
     }
 
+    const { passwordHash, ...rest } = dbUser;
+    res.json({ user: { ...rest, hasPassword: !!passwordHash } });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Update Profile (name + phone) ---
+const profileSchema = z.object({
+  name: z.string().min(2).max(100),
+  phone: z.string().min(10).max(20).optional().or(z.literal("")),
+});
+
+router.patch("/profile", requireUser, async (req, res, next) => {
+  try {
+    const userId = (req.session as AuthSession).userId!;
+    const parsed = profileSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.errors[0]?.message ?? "Geçersiz bilgi" });
+      return;
+    }
+    const phone = parsed.data.phone ? parsed.data.phone : null;
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { name: parsed.data.name, phone },
+      select: { id: true, name: true, email: true, role: true, phone: true },
+    });
     res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --- Change Password ---
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8).max(128),
+});
+
+router.post("/change-password", requireUser, loginLimiter, async (req, res, next) => {
+  try {
+    const userId = (req.session as AuthSession).userId!;
+    const parsed = changePasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Yeni şifre en az 8 karakter olmalıdır." });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      res.status(401).json({ error: "Kullanıcı bulunamadı" });
+      return;
+    }
+    if (!user.passwordHash) {
+      res.status(400).json({
+        error: "Google ile giriş yaptığınız için şifre belirleyemezsiniz.",
+      });
+      return;
+    }
+
+    const valid = await argon2.verify(user.passwordHash, parsed.data.currentPassword);
+    if (!valid) {
+      res.status(400).json({ error: "Mevcut şifreniz hatalı." });
+      return;
+    }
+
+    const passwordHash = await argon2.hash(parsed.data.newPassword, { type: argon2.argon2id });
+    await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

@@ -110,6 +110,13 @@ router.post("/paytr/token", requireUser, paymentLimiter, async (req, res, next) 
 router.post("/paytr/callback", async (req, res, next) => {
   try {
     const params = req.body as Record<string, string>;
+    console.log("[PayTR callback] received", {
+      merchant_oid: params?.merchant_oid,
+      status: params?.status,
+      total_amount: params?.total_amount,
+      hasHash: !!params?.hash,
+      keys: Object.keys(params ?? {}),
+    });
     const { merchantKey, merchantSalt } = await getPayTRCredentials();
 
     if (!verifyPayTRCallback(params, merchantKey, merchantSalt)) {
