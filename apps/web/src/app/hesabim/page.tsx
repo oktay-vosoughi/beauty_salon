@@ -98,12 +98,13 @@ export default function ProfilPage() {
   async function changePassword(e: React.FormEvent) {
     e.preventDefault();
     setPwMsg(null);
+    const settingNew = !user?.hasPassword;
     if (newPassword.length < 8) {
-      setPwMsg({ ok: false, text: "Yeni şifre en az 8 karakter olmalıdır." });
+      setPwMsg({ ok: false, text: "Şifre en az 8 karakter olmalıdır." });
       return;
     }
     if (newPassword !== newPassword2) {
-      setPwMsg({ ok: false, text: "Yeni şifreler eşleşmiyor." });
+      setPwMsg({ ok: false, text: "Şifreler eşleşmiyor." });
       return;
     }
     setSavingPw(true);
@@ -112,14 +113,16 @@ export default function ProfilPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify(settingNew ? { newPassword } : { currentPassword, newPassword }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? "Şifre değiştirilemedi.");
-      setPwMsg({ ok: true, text: "Şifreniz güncellendi." });
+      if (!res.ok) throw new Error(data.error ?? "Şifre kaydedilemedi.");
+      setPwMsg({ ok: true, text: settingNew ? "Şifreniz belirlendi." : "Şifreniz güncellendi." });
       setCurrentPassword("");
       setNewPassword("");
       setNewPassword2("");
+      // Now that a password exists, switch the form to change-password mode.
+      if (settingNew) setUser((u) => (u ? { ...u, hasPassword: true } : u));
     } catch (err) {
       setPwMsg({ ok: false, text: err instanceof Error ? err.message : "Hata oluştu." });
     } finally {
@@ -176,54 +179,64 @@ export default function ProfilPage() {
         </button>
       </form>
 
-      {/* Change password */}
+      {/* Change / set password */}
       <div style={cardStyle}>
-        <h3 style={{ fontSize: "1rem", marginBottom: "1rem" }}>Şifre Değiştir</h3>
-        {!user.hasPassword ? (
-          <p style={{ fontSize: "0.85rem", color: "var(--color-muted)" }}>
-            Google ile giriş yaptığınız için şifre belirleyemezsiniz.
+        <h3 style={{ fontSize: "1rem", marginBottom: "1rem" }}>
+          {user.hasPassword ? "Şifre Değiştir" : "Şifre Belirle"}
+        </h3>
+        {!user.hasPassword && (
+          <p style={{ fontSize: "0.85rem", color: "var(--color-muted)", marginBottom: "1rem" }}>
+            Google ile giriş yaptınız. Buradan bir şifre belirleyerek e-posta ve
+            şifrenizle de giriş yapabilirsiniz.
           </p>
-        ) : (
-          <form onSubmit={changePassword}>
-            <label style={labelStyle}>Mevcut Şifre</label>
-            <input
-              type="password"
-              style={inputStyle}
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              required
-            />
-
-            <label style={labelStyle}>Yeni Şifre</label>
-            <input
-              type="password"
-              style={inputStyle}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              minLength={8}
-              required
-            />
-
-            <label style={labelStyle}>Yeni Şifre (Tekrar)</label>
-            <input
-              type="password"
-              style={inputStyle}
-              value={newPassword2}
-              onChange={(e) => setNewPassword2(e.target.value)}
-              minLength={8}
-              required
-            />
-
-            {pwMsg && (
-              <p style={{ fontSize: "0.85rem", color: pwMsg.ok ? "#27ae60" : "#c0392b", marginBottom: "0.75rem" }}>
-                {pwMsg.text}
-              </p>
-            )}
-            <button type="submit" className="btn btn-primary" disabled={savingPw}>
-              {savingPw ? "Güncelleniyor…" : "Şifreyi Değiştir"}
-            </button>
-          </form>
         )}
+        <form onSubmit={changePassword}>
+          {user.hasPassword && (
+            <>
+              <label style={labelStyle}>Mevcut Şifre</label>
+              <input
+                type="password"
+                style={inputStyle}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+              />
+            </>
+          )}
+
+          <label style={labelStyle}>Yeni Şifre</label>
+          <input
+            type="password"
+            style={inputStyle}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            minLength={8}
+            required
+          />
+
+          <label style={labelStyle}>Yeni Şifre (Tekrar)</label>
+          <input
+            type="password"
+            style={inputStyle}
+            value={newPassword2}
+            onChange={(e) => setNewPassword2(e.target.value)}
+            minLength={8}
+            required
+          />
+
+          {pwMsg && (
+            <p style={{ fontSize: "0.85rem", color: pwMsg.ok ? "#27ae60" : "#c0392b", marginBottom: "0.75rem" }}>
+              {pwMsg.text}
+            </p>
+          )}
+          <button type="submit" className="btn btn-primary" disabled={savingPw}>
+            {savingPw
+              ? "Kaydediliyor…"
+              : user.hasPassword
+                ? "Şifreyi Değiştir"
+                : "Şifre Belirle"}
+          </button>
+        </form>
       </div>
     </div>
   );

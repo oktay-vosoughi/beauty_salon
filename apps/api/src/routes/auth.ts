@@ -163,7 +163,7 @@ router.patch("/profile", requireUser, async (req, res, next) => {
 
 // --- Change Password ---
 const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1),
+  currentPassword: z.string().optional(),
   newPassword: z.string().min(8).max(128),
 });
 
@@ -181,17 +181,20 @@ router.post("/change-password", requireUser, loginLimiter, async (req, res, next
       res.status(401).json({ error: "Kullanıcı bulunamadı" });
       return;
     }
-    if (!user.passwordHash) {
-      res.status(400).json({
-        error: "Google ile giriş yaptığınız için şifre belirleyemezsiniz.",
-      });
-      return;
-    }
 
-    const valid = await argon2.verify(user.passwordHash, parsed.data.currentPassword);
-    if (!valid) {
-      res.status(400).json({ error: "Mevcut şifreniz hatalı." });
-      return;
+    // Accounts that already have a password must verify the current one.
+    // Google accounts (no password yet) may set one for the first time
+    // without a current password — they are already authenticated by session.
+    if (user.passwordHash) {
+      if (!parsed.data.currentPassword) {
+        res.status(400).json({ error: "Mevcut şifrenizi girin." });
+        return;
+      }
+      const valid = await argon2.verify(user.passwordHash, parsed.data.currentPassword);
+      if (!valid) {
+        res.status(400).json({ error: "Mevcut şifreniz hatalı." });
+        return;
+      }
     }
 
     const passwordHash = await argon2.hash(parsed.data.newPassword, { type: argon2.argon2id });
