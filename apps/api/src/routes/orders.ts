@@ -55,8 +55,10 @@ router.post("/", async (req, res, next) => {
       }
     }
 
+    // Kargo geçici olarak ücretsiz (0 TL). KE entegrasyonu tamamlanınca
+    // desi/ağırlığa göre dinamik hesaplanacak.
     const SHIPPING_THRESHOLD = 300;
-    const SHIPPING_COST = 29.90;
+    const SHIPPING_COST = 0;
     const itemsTotal = cart.items.reduce(
       (sum, item) => sum + Number(item.product.price) * item.quantity,
       0

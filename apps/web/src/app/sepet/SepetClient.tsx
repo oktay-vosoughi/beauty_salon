@@ -162,11 +162,11 @@ export default function SepetClient() {
           </div>
           <div className={styles.summaryRow}>
             <span>Kargo</span>
-            <span>{total >= 300 ? "Ücretsiz" : "₺29.90"}</span>
+            <span>Ücretsiz</span>
           </div>
           <div className={`${styles.summaryRow} ${styles.summaryTotal}`}>
             <span>Toplam</span>
-            <span>₺{(total + (total >= 300 ? 0 : 29.9)).toFixed(2)}</span>
+            <span>₺{total.toFixed(2)}</span>
           </div>
           <button
             className="btn btn-primary"
