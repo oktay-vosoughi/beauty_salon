@@ -135,6 +135,7 @@ export async function createShipment(
     platform_d_id: order.id,
     note: note ?? "",
     lines: order.items.map((item) => ({
+      title: item.titleSnapshot,
       quantity: item.quantity,
       sku: item.titleSnapshot,
     })),

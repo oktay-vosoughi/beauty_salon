@@ -84,16 +84,11 @@ router.post("/", async (req, res, next) => {
         include: { items: true },
       });
 
-      // Reserve stock atomically — prevent overselling
-      for (const item of cart.items) {
-        const updated = await tx.product.updateMany({
-          where: { id: item.productId, stock: { gte: item.quantity } },
-          data: { stock: { decrement: item.quantity } },
-        });
-        if (updated.count === 0) {
-          throw new Error(`Stok tükendi: ${item.product.title}`);
-        }
-      }
+      // Stock is NOT decremented here. It is decremented only when payment
+      // succeeds (see PayTR success callback in routes/payments.ts). This avoids
+      // leaking stock on abandoned/unpaid orders. The availability check above
+      // gives the customer an early "out of stock" message; the authoritative
+      // decrement happens atomically at payment confirmation.
 
       // Clear cart
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });

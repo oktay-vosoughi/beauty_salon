@@ -156,7 +156,27 @@ router.post("/paytr/callback", async (req, res, next) => {
           where: { id: payment.orderId },
           data: { status: "PAID" },
         });
-        // Stock was already decremented at order creation — no action needed
+
+        // Decrement stock now that payment is confirmed. Payment is already
+        // captured, so we must never reject here — if stock is insufficient
+        // (rare oversell race), still record the sale (allowing negative stock)
+        // and log a warning for admin follow-up.
+        const items = await tx.orderItem.findMany({ where: { orderId: payment.orderId } });
+        for (const item of items) {
+          const reserved = await tx.product.updateMany({
+            where: { id: item.productId, stock: { gte: item.quantity } },
+            data: { stock: { decrement: item.quantity } },
+          });
+          if (reserved.count === 0) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { decrement: item.quantity } },
+            });
+            console.error(
+              `[Stock] Oversell on paid order ${payment.orderId}: product ${item.productId} qty ${item.quantity} exceeded available stock`
+            );
+          }
+        }
       });
 
       // Auto-create shipment in Kargo Entegratör — non-blocking.
@@ -214,14 +234,7 @@ router.post("/paytr/callback", async (req, res, next) => {
           where: { id: payment.orderId },
           data: { status: "CANCELLED" },
         });
-        // Restore stock reserved at order creation
-        const items = await tx.orderItem.findMany({ where: { orderId: payment.orderId } });
-        for (const item of items) {
-          await tx.product.update({
-            where: { id: item.productId },
-            data: { stock: { increment: item.quantity } },
-          });
-        }
+        // No stock to restore — stock is only decremented on successful payment.
       });
     }
 
