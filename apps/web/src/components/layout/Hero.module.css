@@ -9,6 +9,11 @@
   overflow: hidden;
 }
 
+.bgImage {
+  object-fit: cover;
+  object-position: center;
+}
+
 .overlay {
   position: absolute;
   inset: 0;
@@ -50,4 +55,29 @@
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: calc(100svh - 68px);
+  }
+
+  /* Image subject (model's face) sits on the left of a wide photo;
+     keep it in frame on narrow portrait viewports instead of cropping to center. */
+  .bgImage {
+    object-position: 26% center;
+  }
+
+  .subtitle {
+    font-size: 0.98rem;
+  }
+
+  .buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .buttons :global(.btn) {
+    width: 100%;
+  }
 }

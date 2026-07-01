@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Open_Sans, Prata } from "next/font/google";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import AppShell from "@/components/layout/AppShell";
 import { AppStateProvider } from "@/components/state/AppStateProvider";
 import { getSiteUrl, site } from "@/lib/site";
 import "@/styles/globals.css";
@@ -47,9 +46,7 @@ export default function RootLayout({
     <html lang="tr" className={`${openSans.variable} ${prata.variable}`}>
       <body suppressHydrationWarning style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         <AppStateProvider>
-          <Navbar />
-          <main style={{ flex: 1, paddingTop: "68px" }}>{children}</main>
-          <Footer />
+          <AppShell>{children}</AppShell>
         </AppStateProvider>
       </body>
     </html>

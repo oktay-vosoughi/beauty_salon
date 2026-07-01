@@ -11,7 +11,7 @@ export default function Hero() {
         fill
         priority
         sizes="100vw"
-        style={{ objectFit: "cover", objectPosition: "center" }}
+        className={styles.bgImage}
       />
       <div className={styles.overlay} />
       <div className={styles.content}>
