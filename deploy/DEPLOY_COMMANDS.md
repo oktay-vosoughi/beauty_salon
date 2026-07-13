@@ -112,6 +112,20 @@ pm2 save
 
 ## Deploy Sonrasi Kontrol
 
+Nginx config degistiyse once config'i sisteme kopyalayin ve Nginx'i reload edin:
+
+```bash
+sudo cp deploy/nginx.conf /etc/nginx/sites-available/guzellikmerkezi.com.tr
+```
+
+```bash
+sudo nginx -t
+```
+
+```bash
+sudo systemctl reload nginx
+```
+
 ```bash
 pm2 status
 ```
