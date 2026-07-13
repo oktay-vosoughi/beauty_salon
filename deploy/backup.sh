@@ -44,7 +44,7 @@ out="$BACKUP_DIR/${dbname}-$(date +%Y%m%d-%H%M%S).sql.gz"
 
 echo "Backing up '$dbname' → $out"
 mysqldump --defaults-extra-file="$CNF_TMP" \
-  --single-transaction --quick --routines --triggers "$dbname" | gzip > "$out"
+  --single-transaction --quick --routines --triggers --no-tablespaces "$dbname" | gzip > "$out"
 rm -f "$CNF_TMP"; CNF_TMP=""
 
 # Retain only the most recent $BACKUP_KEEP dumps.
