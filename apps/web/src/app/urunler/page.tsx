@@ -77,6 +77,7 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
               {items.map((p, index) => {
                 const imgUrl = p.images[0]?.url ?? "/images/placeholder.jpg";
                 const blur = p.images[0]?.blurDataUrl;
+                const isUploadedImage = imgUrl.startsWith("/uploads/");
                 return (
                   <Link key={p.id} href={`/urunler/${p.slug}`} className={styles.card}>
                     <div className={styles.imgWrap}>
@@ -90,6 +91,7 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
                         loading={index === 0 ? undefined : "lazy"}
                         placeholder={blur ? "blur" : "empty"}
                         blurDataURL={blur ?? undefined}
+                        unoptimized={isUploadedImage}
                       />
                     </div>
                     <div className={styles.body}>

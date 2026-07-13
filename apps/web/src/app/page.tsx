@@ -140,6 +140,7 @@ export default async function HomePage() {
                 {featured.map((p, index) => {
                   const imgUrl = p.images[0]?.url ?? "/placeholder.jpg";
                   const blur = p.images[0]?.blurDataUrl;
+                  const isUploadedImage = imgUrl.startsWith("/uploads/");
                   // First card is likely above the fold — preload it.
                   const isFirst = index === 0;
                   return (
@@ -155,6 +156,7 @@ export default async function HomePage() {
                           loading={isFirst ? undefined : "lazy"}
                           placeholder={blur ? "blur" : "empty"}
                           blurDataURL={blur ?? undefined}
+                          unoptimized={isUploadedImage}
                         />
                       </div>
                       <div className={styles.featuredBody}>

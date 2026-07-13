@@ -115,6 +115,7 @@ export default async function CategoryPage({
             <div className={styles.grid}>
               {items.map((p, index) => {
                 const imgUrl = p.images[0]?.url ?? "/placeholder.jpg";
+                const isUploadedImage = imgUrl.startsWith("/uploads/");
                 return (
                   <Link key={p.id} href={`/urunler/${p.slug}`} className={styles.card}>
                     <div className={styles.imgWrap}>
@@ -125,6 +126,7 @@ export default async function CategoryPage({
                         sizes="(max-width: 480px) 100vw, (max-width: 900px) 50vw, 25vw"
                         style={{ objectFit: "contain" }}
                         priority={index === 0}
+                        unoptimized={isUploadedImage}
                       />
                     </div>
                     <div className={styles.body}>

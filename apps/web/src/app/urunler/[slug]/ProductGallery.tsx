@@ -23,6 +23,7 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeImage = galleryImages[activeIndex] ?? galleryImages[0];
   const hasMultipleImages = galleryImages.length > 1;
+  const activeImageIsUploaded = activeImage.url.startsWith("/uploads/");
 
   function showPrevious() {
     setActiveIndex((current) =>
@@ -48,6 +49,7 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
           priority
           placeholder={activeImage.blurDataUrl ? "blur" : "empty"}
           blurDataURL={activeImage.blurDataUrl ?? undefined}
+          unoptimized={activeImageIsUploaded}
         />
 
         {hasMultipleImages && (
@@ -97,6 +99,7 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
                 loading="lazy"
                 placeholder={img.blurDataUrl ? "blur" : "empty"}
                 blurDataURL={img.blurDataUrl ?? undefined}
+                unoptimized={img.url.startsWith("/uploads/")}
               />
             </button>
           ))}
