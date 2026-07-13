@@ -44,7 +44,7 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
           alt={activeImage.alt || title}
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "contain" }}
           priority
           placeholder={activeImage.blurDataUrl ? "blur" : "empty"}
           blurDataURL={activeImage.blurDataUrl ?? undefined}

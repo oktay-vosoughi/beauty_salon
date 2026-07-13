@@ -123,7 +123,7 @@ export default async function CategoryPage({
                         alt={p.images[0]?.alt ?? p.title}
                         fill
                         sizes="(max-width: 480px) 100vw, (max-width: 900px) 50vw, 25vw"
-                        style={{ objectFit: "cover" }}
+                        style={{ objectFit: "contain" }}
                         priority={index === 0}
                       />
                     </div>

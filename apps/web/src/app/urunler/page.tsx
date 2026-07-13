@@ -85,7 +85,7 @@ export default async function UrunlerPage({ searchParams }: PageProps) {
                         alt={p.images[0]?.alt ?? p.title}
                         fill
                         sizes="(max-width: 480px) 100vw, (max-width: 900px) 50vw, 25vw"
-                        style={{ objectFit: "cover" }}
+                        style={{ objectFit: "contain" }}
                         priority={index === 0}
                         loading={index === 0 ? undefined : "lazy"}
                         placeholder={blur ? "blur" : "empty"}
