@@ -15,6 +15,11 @@ const UPLOAD_ROOT = process.env.UPLOADS_DIR
 const PRODUCT_DIR = path.join(UPLOAD_ROOT, "products");
 fs.mkdirSync(PRODUCT_DIR, { recursive: true });
 
+const MAX_SOURCE_IMAGE_BYTES = 25 * 1024 * 1024; // raw admin upload
+const MAX_OPTIMIZED_IMAGE_BYTES = 5 * 1024 * 1024; // stored product image
+const PRODUCT_IMAGE_MAX_DIMENSION = 1600;
+const WEBP_QUALITIES = [88, 84, 80, 76] as const;
+
 const ALLOWED_MIME: Record<string, string> = {
   "image/jpeg": ".jpg",
   "image/png": ".png",
@@ -72,6 +77,43 @@ async function isValidImageFile(filePath: string, mimetype: string) {
   }
 }
 
+async function optimizeProductImage(sourcePath: string, destinationPath: string) {
+  const parsed = path.parse(destinationPath);
+  let lastSize = 0;
+
+  for (const quality of WEBP_QUALITIES) {
+    const tempPath = path.join(PRODUCT_DIR, `${parsed.name}-${randomUUID()}.tmp.webp`);
+
+    try {
+      await sharp(sourcePath)
+        .rotate()
+        .resize({
+          width: PRODUCT_IMAGE_MAX_DIMENSION,
+          height: PRODUCT_IMAGE_MAX_DIMENSION,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .webp({ quality, effort: 4 })
+        .toFile(tempPath);
+
+      const stats = await fs.promises.stat(tempPath);
+      lastSize = stats.size;
+
+      if (stats.size <= MAX_OPTIMIZED_IMAGE_BYTES) {
+        await fs.promises.rm(destinationPath, { force: true });
+        await fs.promises.rename(tempPath, destinationPath);
+        return { size: stats.size, quality };
+      }
+    } finally {
+      await fs.promises.rm(tempPath, { force: true }).catch(() => {});
+    }
+  }
+
+  const err = new Error("OPTIMIZED_FILE_TOO_LARGE");
+  (err as Error & { lastSize?: number }).lastSize = lastSize;
+  throw err;
+}
+
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, PRODUCT_DIR),
   filename: (_req, file, cb) => {
@@ -83,7 +125,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  limits: { fileSize: MAX_SOURCE_IMAGE_BYTES },
   fileFilter: (_req, file, cb) => {
     if (ALLOWED_MIME[file.mimetype]) cb(null, true);
     else cb(new Error("UNSUPPORTED_FILE_TYPE"));
@@ -99,7 +141,7 @@ router.post("/", (req, res, next) => {
         msg === "UNSUPPORTED_FILE_TYPE"
           ? "Desteklenmeyen dosya türü. Sadece JPG/PNG/WEBP/AVIF/GIF kabul edilir."
           : msg.includes("File too large")
-          ? "Dosya çok büyük (en fazla 5 MB)."
+          ? "Dosya çok büyük (en fazla 25 MB)."
           : "Yükleme başarısız.";
       res.status(code).json({ error: human });
       return;
@@ -130,10 +172,7 @@ router.post("/", (req, res, next) => {
         const webpFilename = `${parsedName.name}.webp`;
         const webpPath = path.join(PRODUCT_DIR, webpFilename);
 
-        await sharp(req.file.path)
-          .resize({ width: 1200, height: 1200, fit: "inside", withoutEnlargement: true })
-          .webp({ quality: 85 })
-          .toFile(webpPath);
+        const optimized = await optimizeProductImage(req.file.path, webpPath);
 
         if (req.file.filename !== webpFilename) {
           await fs.promises.rm(req.file.path, { force: true });
@@ -147,10 +186,22 @@ router.post("/", (req, res, next) => {
         const blurDataUrl = `data:image/webp;base64,${blurBuffer.toString("base64")}`;
 
         const url = `/uploads/products/${webpFilename}`;
-        res.status(201).json({ url, filename: webpFilename, mimetype: "image/webp", blurDataUrl });
+        res.status(201).json({
+          url,
+          filename: webpFilename,
+          size: optimized.size,
+          mimetype: "image/webp",
+          blurDataUrl,
+        });
         return;
       } catch (sharpErr) {
         await fs.promises.rm(req.file.path, { force: true }).catch(() => {});
+        if (sharpErr instanceof Error && sharpErr.message === "OPTIMIZED_FILE_TOO_LARGE") {
+          res.status(400).json({
+            error: "Görsel optimize edildikten sonra bile 5 MB üstünde kaldı. Lütfen daha küçük bir görsel deneyin.",
+          });
+          return;
+        }
         next(sharpErr);
         return;
       }

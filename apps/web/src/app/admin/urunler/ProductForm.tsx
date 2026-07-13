@@ -11,6 +11,7 @@ export interface ProductImageInput {
 }
 
 const UPLOAD_PREFIX = "/uploads/products/";
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
 function isUploadedUrl(url: string): boolean {
   return url.startsWith(UPLOAD_PREFIX);
@@ -180,8 +181,8 @@ export default function ProductForm({ mode, productId, initial }: Props) {
       setError("Sadece görsel dosyaları yüklenebilir.");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Dosya 5 MB'dan büyük olamaz.");
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError("Dosya 25 MB'dan büyük olamaz.");
       return;
     }
     setError("");
@@ -453,7 +454,7 @@ export default function ProductForm({ mode, productId, initial }: Props) {
           </button>
         </div>
         <p style={{ color: "var(--color-muted)", fontSize: "0.75rem", margin: "0 0 0.75rem" }}>
-          Bilgisayardan dosya yükleyebilir veya doğrudan URL girebilirsiniz. Maks. 5 MB; JPG/PNG/WEBP/AVIF/GIF.
+          Bilgisayardan dosya yükleyebilir veya doğrudan URL girebilirsiniz. Maks. 25 MB; JPG/PNG/WEBP/AVIF/GIF otomatik WebP olarak optimize edilir.
         </p>
         {values.images.length === 0 && (
           <p style={{ color: "var(--color-muted)", fontSize: "0.85rem" }}>Henüz görsel yok.</p>

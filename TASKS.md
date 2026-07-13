@@ -9,6 +9,20 @@
 - [x] Add admin campaign screen and homepage banner.
 - [x] Verify API tests and typechecks. Web build compiles but standalone output is blocked by Windows symlink permission.
 
+## 2026-07-13 Parametric Campaigns + Deploy Follow-up
+
+- [x] Add `PERCENT_DISCOUNT` and `BUY_X_PAY_Y` campaign types.
+- [x] Add campaign parameters: `discountPercent`, `buyQuantity`, `payQuantity`.
+- [x] Convert `2 Al 2 Bedava` to the same X/Y rule shape (`buyQuantity=4`, `payQuantity=2`).
+- [x] Add server-side calculation for percentage discount and X Al Y Öde campaigns.
+- [x] Add dynamic admin form controls for campaign type, discount percent, and X/Y quantities.
+- [x] Add admin campaign delete button and make DELETE remove the campaign from the list.
+- [x] Move campaign banner into public app shell as a fixed animated banner visible on public pages.
+- [x] Add DB migration `20260713000100_add_parametric_campaigns` and apply locally.
+- [x] Verify `campaigns.unit.test.ts`, `api.test.ts`, API typecheck, and web typecheck.
+- [x] Document deploy troubleshooting: server-side `chmod +x deploy/deploy.sh` creates a mode-only git diff; restore/stash before deploy.
+- [x] Document deploy troubleshooting: do not press `Ctrl+C` during `next build`; rerun build before copying `.next/static`.
+
 ## Milestone Status
 
 | # | Milestone | Status |
@@ -135,6 +149,9 @@
 - [x] /hesabim/siparisler — real orders list with status + pay button for PENDING
 - [x] /hesabim/odemeler — real payment history with status badges
 - [x] apps/api/src/app.ts — separated app from server entry (enables supertest imports)
+- [x] /admin/kampanyalar — admin-managed campaigns with `2 Al 2 Bedava`, `% indirim`, and `X Al Y Öde`
+- [x] Fixed animated campaign banner across public pages
+- [x] Campaign discounts stored in order totals and order item snapshots
 
 ---
 

@@ -358,3 +358,41 @@ model SiteSetting {
 - TypeScript Web: 0 errors
 - `prisma db push` applied successfully
 
+---
+
+## Review Notes — 2026-07-13 (Campaign System + Deploy)
+
+### Implemented
+- Added admin campaign management at `/admin/kampanyalar`.
+- Added campaign APIs:
+  - `GET /api/campaigns/active-banner`
+  - `GET/POST/PATCH/DELETE /api/admin/campaigns`
+- Added parametric campaign support:
+  - `BUY_2_GET_2`
+  - `PERCENT_DISCOUNT`
+  - `BUY_X_PAY_Y`
+- Added `Campaign.discountPercent`, `Campaign.buyQuantity`, and `Campaign.payQuantity`.
+- Added `OrderItem.discountAmount`, `OrderItem.isGift`, and `OrderItem.campaignId` snapshots.
+- Cart and order creation now calculate promotion totals server-side.
+- Public fixed animated banner is rendered from `FixedCampaignBanner` in `AppShell`.
+- Admin campaign delete removes the campaign from the admin list.
+
+### Key Files
+- `apps/api/src/services/campaigns.ts`
+- `apps/api/src/routes/campaigns.ts`
+- `apps/api/src/routes/admin/campaigns.ts`
+- `apps/api/prisma/migrations/20260713000000_add_campaigns/migration.sql`
+- `apps/api/prisma/migrations/20260713000100_add_parametric_campaigns/migration.sql`
+- `apps/web/src/app/admin/kampanyalar/AdminCampaignsClient.tsx`
+- `apps/web/src/components/layout/FixedCampaignBanner.tsx`
+
+### Verification
+- Campaign unit tests: 5 passing.
+- API tests: 22 passing.
+- API and web typecheck pass.
+
+### Deploy Memory
+- Production deploy must apply both campaign migrations.
+- On the VPS, run `bash deploy/deploy.sh` from `/var/www/guzellikmerkezi`.
+- If `deploy/deploy.sh` is dirty only because of `chmod +x`, use `git restore deploy/deploy.sh` before deploy.
+- Do not interrupt `next build`; if interrupted, rerun the build before copying standalone assets.

@@ -1,6 +1,46 @@
 # Development Status — Beauty Salon Turkish E-commerce
 
-Last updated: 2026-05-07
+Last updated: 2026-07-13
+
+---
+
+## 2026-07-13 Current Memory
+
+### Campaign System
+- Admin route: `/admin/kampanyalar`.
+- Public campaign banner endpoint: `GET /api/campaigns/active-banner`.
+- Admin campaign API: `GET/POST/PATCH/DELETE /api/admin/campaigns`.
+- Supported campaign types:
+  - `BUY_2_GET_2`: 4 units grouped, pay 2 most expensive, 2 cheapest are gifts.
+  - `PERCENT_DISCOUNT`: uses `discountPercent` for cart-wide percent discount.
+  - `BUY_X_PAY_Y`: uses `buyQuantity` and `payQuantity`; charges most expensive units first.
+- Cart API returns `campaign` and `promotion` summary so the cart UI shows discounted totals before checkout.
+- Order creation uses server-side campaign totals; PayTR payment amount comes from discounted `Order.totalAmount`.
+- `OrderItem` stores discount snapshots via `discountAmount`, `isGift`, and `campaignId`.
+- Fixed animated banner component is `apps/web/src/components/layout/FixedCampaignBanner.tsx`.
+- Admin campaign UI is `apps/web/src/app/admin/kampanyalar/AdminCampaignsClient.tsx`.
+
+### Campaign Migrations
+- `20260713000000_add_campaigns` adds `Campaign` and order item discount snapshot fields.
+- `20260713000100_add_parametric_campaigns` adds `PERCENT_DISCOUNT`, `BUY_X_PAY_Y`, `discountPercent`, `buyQuantity`, and `payQuantity`.
+- On Windows/local dev, stop API dev server before `pnpm --filter @niltellioglu/api run db:generate` if Prisma DLL is locked.
+
+### Verification Snapshot
+- `pnpm --filter @niltellioglu/api run test -- src/tests/campaigns.unit.test.ts` passed: 5 tests.
+- `pnpm --filter @niltellioglu/api run test -- src/tests/api.test.ts` passed: 22 tests.
+- `pnpm --filter @niltellioglu/api run typecheck` passed.
+- `pnpm --filter @niltellioglu/web run typecheck` passed.
+- Local Windows `next build` compiles/typechecks but standalone symlink copy can fail with `EPERM`; Linux VPS build should be allowed to finish without interruption.
+
+### Deploy Notes
+- Server path used in support: `/var/www/guzellikmerkezi`.
+- Run deploy from repo root with `bash deploy/deploy.sh`.
+- `deploy.sh: command not found` is expected if called without `./` or `bash`; use `./deploy.sh` from `deploy/` or `bash deploy/deploy.sh` from repo root.
+- `chmod +x deploy/deploy.sh` creates a mode-only git diff (`100644 -> 100755`) that blocks fast-forward merge. Fix with `git restore deploy/deploy.sh` if no content changed.
+- If `ecosystem.config.js` has server-local edits, inspect with `git diff -- ecosystem.config.js`; backup then restore before deploy if appropriate.
+- Do not interrupt `next build`. If interrupted, rerun:
+  - `WEB_BASE_URL=https://ntbeauty.shop pnpm --filter @niltellioglu/web build`
+  - then copy standalone assets and restart PM2.
 
 ---
 

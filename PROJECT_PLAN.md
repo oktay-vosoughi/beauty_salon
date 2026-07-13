@@ -7,6 +7,19 @@
 - Show the active campaign as a homepage banner when enabled.
 - Preserve gift/discount snapshots on order items.
 
+## 2026-07-13 Parametric Campaign Update
+
+- Campaigns now support three admin-selectable types:
+  - `BUY_2_GET_2`: fixed 4-item group, pay 2 most expensive units.
+  - `PERCENT_DISCOUNT`: percentage discount across the whole cart.
+  - `BUY_X_PAY_Y`: configurable group size and paid item count, charging the most expensive units first.
+- Campaign model includes `discountPercent`, `buyQuantity`, and `payQuantity`.
+- Public campaign banner is rendered globally in the public app shell as a fixed animated banner.
+- Admin campaign delete now removes the campaign from the admin list instead of only deactivating it.
+- Production deploy must run both campaign migrations:
+  - `20260713000000_add_campaigns`
+  - `20260713000100_add_parametric_campaigns`
+
 ## 1. Stack Decision
 
 | Layer | Choice |

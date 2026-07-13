@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
 import argon2 from "argon2";
+import { randomBytes } from "crypto";
 import fs from "fs/promises";
 import path from "path";
 import sharp from "sharp";
@@ -15,6 +16,17 @@ const png1x1 = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
   "base64"
 );
+
+async function createLargeJpegOver5Mb(): Promise<Buffer> {
+  const width = 2400;
+  const height = 2400;
+  const channels = 3;
+  return sharp(randomBytes(width * height * channels), {
+    raw: { width, height, channels },
+  })
+    .jpeg({ quality: 100 })
+    .toBuffer();
+}
 
 async function removeUploaded(filename?: string) {
   if (!filename) return;
@@ -87,6 +99,29 @@ describe("Admin uploads security", () => {
       expect(res.body.url).toMatch(/^\/uploads\/products\/.+\.webp$/);
       expect(res.body.mimetype).toBe("image/webp");
       expect(res.body.blurDataUrl).toMatch(/^data:image\/webp;base64,/);
+    } finally {
+      await removeUploaded(res.body.filename);
+    }
+  });
+
+  it("accepts and optimizes valid images larger than 5 MB", async () => {
+    const largeJpeg = await createLargeJpegOver5Mb();
+    expect(largeJpeg.byteLength).toBeGreaterThan(5 * 1024 * 1024);
+
+    const res = await agent
+      .post("/api/admin/uploads")
+      .attach("file", largeJpeg, {
+        filename: "large-product.jpg",
+        contentType: "image/jpeg",
+      });
+
+    try {
+      expect(res.status).toBe(201);
+      expect(res.body.url).toMatch(/^\/uploads\/products\/.+\.webp$/);
+      expect(res.body.mimetype).toBe("image/webp");
+      expect(res.body.size).toBeLessThanOrEqual(5 * 1024 * 1024);
+      const stats = await fs.stat(path.join(PRODUCT_DIR, res.body.filename));
+      expect(stats.size).toBeLessThanOrEqual(5 * 1024 * 1024);
     } finally {
       await removeUploaded(res.body.filename);
     }
