@@ -7,18 +7,38 @@ import { prisma } from "../db/prisma";
 
 const TEST_EMAIL = `test-${Date.now()}@example.com`;
 const TEST_RESET_EMAIL = `reset-${Date.now()}@example.com`;
+const TEST_ADMIN_EMAIL = `admin-${Date.now()}@example.com`;
+const TEST_ORDER_EMAIL = `order-${Date.now()}@example.com`;
+const TEST_CAMPAIGN_SLUG = `test-kampanya-${Date.now()}`;
+const TEST_ORDER_CAMPAIGN_SLUG = `test-order-kampanya-${Date.now()}`;
+const TEST_PERCENT_CAMPAIGN_SLUG = `test-percent-kampanya-${Date.now()}`;
+const TEST_BUY_X_PAY_Y_CAMPAIGN_SLUG = `test-buyxpayy-kampanya-${Date.now()}`;
+const TEST_ORDER_CATEGORY_SLUG = `test-order-category-${Date.now()}`;
+const TEST_ORDER_PRODUCT_PREFIX = `test-order-product-${Date.now()}`;
 const TEST_PASSWORD = "Test1234!";
 const TEST_RESET_PASSWORD = "Reset1234!";
 
 // Persistent agent keeps session cookies between requests
 const agent = request.agent(app);
+const adminAgent = request.agent(app);
 
 beforeAll(async () => {
-  await prisma.user.deleteMany({ where: { email: { in: [TEST_EMAIL, TEST_RESET_EMAIL] } } });
+  await prisma.user.deleteMany({ where: { email: { in: [TEST_EMAIL, TEST_RESET_EMAIL, TEST_ADMIN_EMAIL, TEST_ORDER_EMAIL] } } });
 });
 
 afterAll(async () => {
-  await prisma.user.deleteMany({ where: { email: { in: [TEST_EMAIL, TEST_RESET_EMAIL] } } });
+  const orderUser = await prisma.user.findUnique({ where: { email: TEST_ORDER_EMAIL }, select: { id: true } });
+  if (orderUser) {
+    await prisma.payment.deleteMany({ where: { order: { userId: orderUser.id } } });
+    await prisma.orderItem.deleteMany({ where: { order: { userId: orderUser.id } } });
+    await prisma.order.deleteMany({ where: { userId: orderUser.id } });
+    await prisma.cartItem.deleteMany({ where: { cart: { userId: orderUser.id } } });
+    await prisma.cart.deleteMany({ where: { userId: orderUser.id } });
+  }
+  await prisma.campaign.deleteMany({ where: { slug: { in: [TEST_CAMPAIGN_SLUG, TEST_ORDER_CAMPAIGN_SLUG, TEST_PERCENT_CAMPAIGN_SLUG, TEST_BUY_X_PAY_Y_CAMPAIGN_SLUG] } } });
+  await prisma.product.deleteMany({ where: { slug: { startsWith: TEST_ORDER_PRODUCT_PREFIX } } });
+  await prisma.category.deleteMany({ where: { slug: TEST_ORDER_CATEGORY_SLUG } });
+  await prisma.user.deleteMany({ where: { email: { in: [TEST_EMAIL, TEST_RESET_EMAIL, TEST_ADMIN_EMAIL, TEST_ORDER_EMAIL] } } });
   await prisma.$disconnect();
 });
 
@@ -217,6 +237,97 @@ describe("Categories API", () => {
   });
 });
 
+describe("Campaigns API", () => {
+  it("GET /api/campaigns/active-banner — returns 200 with nullable campaign", async () => {
+    const res = await request(app).get("/api/campaigns/active-banner");
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("campaign");
+  });
+
+  it("Admin campaigns — creates, lists, and updates a buy 2 get 2 campaign", async () => {
+    const passwordHash = await argon2.hash(TEST_PASSWORD, { type: argon2.argon2id });
+    await prisma.user.create({
+      data: {
+        name: "Admin Kampanya",
+        email: TEST_ADMIN_EMAIL,
+        passwordHash,
+        role: "ADMIN",
+      },
+    });
+
+    const login = await adminAgent
+      .post("/api/auth/login")
+      .send({ email: TEST_ADMIN_EMAIL, password: TEST_PASSWORD });
+    expect(login.status).toBe(200);
+
+    const create = await adminAgent
+      .post("/api/admin/campaigns")
+      .send({
+        slug: TEST_CAMPAIGN_SLUG,
+        title: "2 Al 2 Bedava",
+        description: "Sepette dört üründe ucuz iki ürün hediye.",
+        type: "BUY_2_GET_2",
+        isActive: true,
+        showOnHomepage: true,
+        bannerTitle: "2 Al 2 Bedava",
+        bannerText: "Sepete 4 ürün ekleyin, en ucuz 2 ürün bizden.",
+        bannerButtonText: "Alışverişe Başla",
+        bannerButtonHref: "/urunler",
+      });
+    expect(create.status).toBe(201);
+    expect(create.body.slug).toBe(TEST_CAMPAIGN_SLUG);
+    expect(create.body.buyQuantity).toBe(4);
+    expect(create.body.payQuantity).toBe(2);
+
+    const percentCreate = await adminAgent
+      .post("/api/admin/campaigns")
+      .send({
+        slug: TEST_PERCENT_CAMPAIGN_SLUG,
+        title: "%20 İndirim",
+        description: "Tüm sepette yüzde 20 indirim.",
+        type: "PERCENT_DISCOUNT",
+        discountPercent: 20,
+        isActive: false,
+        showOnHomepage: false,
+      });
+    expect(percentCreate.status).toBe(201);
+    expect(percentCreate.body.discountPercent).toBe("20");
+
+    const buyXPayYCreate = await adminAgent
+      .post("/api/admin/campaigns")
+      .send({
+        slug: TEST_BUY_X_PAY_Y_CAMPAIGN_SLUG,
+        title: "3 Al 1 Öde",
+        description: "Sepette 3 üründen en pahalısını öde.",
+        type: "BUY_X_PAY_Y",
+        buyQuantity: 3,
+        payQuantity: 1,
+        isActive: false,
+        showOnHomepage: false,
+      });
+    expect(buyXPayYCreate.status).toBe(201);
+    expect(buyXPayYCreate.body.buyQuantity).toBe(3);
+    expect(buyXPayYCreate.body.payQuantity).toBe(1);
+
+    const list = await adminAgent.get("/api/admin/campaigns");
+    expect(list.status).toBe(200);
+    expect(list.body.items.some((item: { slug: string }) => item.slug === TEST_CAMPAIGN_SLUG)).toBe(true);
+
+    const update = await adminAgent
+      .patch(`/api/admin/campaigns/${create.body.id}`)
+      .send({ showOnHomepage: false });
+    expect(update.status).toBe(200);
+    expect(update.body.showOnHomepage).toBe(false);
+
+    const remove = await adminAgent.delete(`/api/admin/campaigns/${create.body.id}`);
+    expect(remove.status).toBe(200);
+
+    const listAfterDelete = await adminAgent.get("/api/admin/campaigns");
+    expect(listAfterDelete.status).toBe(200);
+    expect(listAfterDelete.body.items.some((item: { slug: string }) => item.slug === TEST_CAMPAIGN_SLUG)).toBe(false);
+  });
+});
+
 describe("Cart API (authenticated via agent)", () => {
   it("GET /api/cart — 401 without auth", async () => {
     const res = await request(app).get("/api/cart");
@@ -226,6 +337,82 @@ describe("Cart API (authenticated via agent)", () => {
   it("GET /api/cart — 200 when authenticated", async () => {
     const res = await agent.get("/api/cart");
     expect(res.status).toBe(200);
+  });
+});
+
+describe("Orders API campaign totals", () => {
+  it("POST /api/orders — charges only the two most expensive products when buy 2 get 2 is active", async () => {
+    const orderAgent = request.agent(app);
+    const passwordHash = await argon2.hash(TEST_PASSWORD, { type: argon2.argon2id });
+    const user = await prisma.user.create({
+      data: {
+        name: "Sipariş Kullanıcı",
+        email: TEST_ORDER_EMAIL,
+        passwordHash,
+      },
+    });
+    const category = await prisma.category.create({
+      data: { name: "Test Kampanya Kategorisi", slug: TEST_ORDER_CATEGORY_SLUG },
+    });
+    const products = await Promise.all(
+      [100, 90, 50, 30].map((price, index) =>
+        prisma.product.create({
+          data: {
+            slug: `${TEST_ORDER_PRODUCT_PREFIX}-${index}`,
+            title: `Test Kampanya Ürünü ${index + 1}`,
+            description: "Kampanya test ürünü",
+            price,
+            stock: 10,
+            isActive: true,
+            categoryId: category.id,
+          },
+        })
+      )
+    );
+    await prisma.campaign.create({
+      data: {
+        slug: TEST_ORDER_CAMPAIGN_SLUG,
+        title: "2 Al 2 Bedava Sipariş Testi",
+        type: "BUY_2_GET_2",
+        isActive: true,
+        showOnHomepage: false,
+      },
+    });
+
+    const login = await orderAgent
+      .post("/api/auth/login")
+      .send({ email: user.email, password: TEST_PASSWORD });
+    expect(login.status).toBe(200);
+
+    for (const product of products) {
+      const add = await orderAgent
+        .post("/api/cart/items")
+        .send({ productId: product.id, quantity: 1 });
+      expect(add.status).toBe(201);
+    }
+
+    const cart = await orderAgent.get("/api/cart");
+    expect(cart.status).toBe(200);
+    expect(Number(cart.body.promotion.total)).toBe(190);
+    expect(Number(cart.body.promotion.discountTotal)).toBe(80);
+
+    const res = await orderAgent.post("/api/orders").send({
+      shippingAddress: {
+        fullName: "Test Kullanıcı",
+        phone: "05555555555",
+        line1: "Test adres",
+        district: "Çekmeköy",
+        city: "İstanbul",
+        postalCode: "34782",
+      },
+    });
+
+    expect(res.status).toBe(201);
+    expect(Number(res.body.totalAmount)).toBe(190);
+    const giftItems = res.body.items.filter((item: { isGift: boolean }) => item.isGift);
+    expect(giftItems).toHaveLength(2);
+    const giftDiscounts: number[] = giftItems.map((item: { discountAmount: string }) => Number(item.discountAmount));
+    expect(giftDiscounts.sort((a: number, b: number) => a - b)).toEqual([30, 50]);
   });
 });
 

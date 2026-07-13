@@ -1,0 +1,152 @@
+.banner {
+  position: fixed;
+  top: 68px;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  min-height: 48px;
+  background: linear-gradient(90deg, #7a4d2b, #b98552, #7a4d2b);
+  background-size: 220% 100%;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+  animation: slideDown 0.28s ease-out, glowMove 5s linear infinite;
+}
+
+.track {
+  width: min(1120px, calc(100% - 2rem));
+  min-height: 48px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  white-space: nowrap;
+  animation: contentDrift 8s ease-in-out infinite;
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.content strong {
+  font-size: 0.9rem;
+}
+
+.text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.86rem;
+}
+
+.action {
+  flex-shrink: 0;
+  padding: 0.42rem 0.8rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #7a4d2b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes glowMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 220% 50%;
+  }
+}
+
+@keyframes contentDrift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+}
+
+@media (max-width: 640px) {
+  .banner {
+    min-height: 58px;
+  }
+
+  .track {
+    min-height: 58px;
+    width: min(100% - 1rem, 1120px);
+    gap: 0.65rem;
+  }
+
+  .content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.12rem;
+    white-space: normal;
+    animation: none;
+  }
+
+  .badge {
+    font-size: 0.62rem;
+    padding: 0.1rem 0.42rem;
+  }
+
+  .content strong,
+  .text {
+    font-size: 0.78rem;
+    line-height: 1.2;
+  }
+
+  .text {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+
+  .action {
+    padding: 0.35rem 0.58rem;
+    font-size: 0.68rem;
+    max-width: 92px;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.1;
+  }
+}

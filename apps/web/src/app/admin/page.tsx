@@ -24,6 +24,11 @@ export default function AdminDashboard() {
           <div className={styles.cardLabel}>Yorumlar</div>
           <div className={styles.cardLink}><Link href="/admin/yorumlar">Yönet →</Link></div>
         </div>
+        <div className={styles.card}>
+          <div className={styles.cardIcon}>%</div>
+          <div className={styles.cardLabel}>Kampanyalar</div>
+          <div className={styles.cardLink}><Link href="/admin/kampanyalar">Yönet →</Link></div>
+        </div>
       </div>
     </div>
   );

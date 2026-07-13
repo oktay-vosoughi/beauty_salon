@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../db/prisma";
 import { requireUser } from "../middleware/auth";
 import type { AuthSession } from "../middleware/auth";
+import { calculateCartPromotion } from "../services/campaigns";
 
 const router = Router();
 
@@ -30,10 +31,34 @@ async function getOrCreateCart(userId: number) {
   });
 }
 
+async function buildCartResponse(userId: number) {
+  const cart = await getOrCreateCart(userId);
+  const { campaign, promotion } = await calculateCartPromotion(
+    cart.items.map((item) => ({
+      productId: item.productId,
+      unitPrice: Number(item.product.price),
+      quantity: item.quantity,
+    }))
+  );
+
+  return {
+    ...cart,
+    campaign: campaign
+      ? {
+          id: campaign.id,
+          slug: campaign.slug,
+          title: campaign.title,
+          type: campaign.type,
+        }
+      : null,
+    promotion,
+  };
+}
+
 router.get("/", async (req, res, next) => {
   try {
     const userId = (req.session as AuthSession).userId!;
-    const cart = await getOrCreateCart(userId);
+    const cart = await buildCartResponse(userId);
     res.json(cart);
   } catch (err) { next(err); }
 });
@@ -59,7 +84,7 @@ router.post("/items", async (req, res, next) => {
       await prisma.cartItem.create({ data: { cartId: cart.id, productId, quantity } });
     }
 
-    const updatedCart = await getOrCreateCart(userId);
+    const updatedCart = await buildCartResponse(userId);
     res.status(201).json(updatedCart);
   } catch (err) { next(err); }
 });
@@ -78,7 +103,7 @@ router.patch("/items/:itemId", async (req, res, next) => {
     if (item.product.stock < quantity.data) { res.status(400).json({ error: "Stok yetersiz" }); return; }
 
     await prisma.cartItem.update({ where: { id: item.id }, data: { quantity: quantity.data } });
-    const updatedCart = await getOrCreateCart(userId);
+    const updatedCart = await buildCartResponse(userId);
     res.json(updatedCart);
   } catch (err) { next(err); }
 });
@@ -91,7 +116,7 @@ router.delete("/items/:itemId", async (req, res, next) => {
     });
     if (!item) { res.status(404).json({ error: "Ürün bulunamadı" }); return; }
     await prisma.cartItem.delete({ where: { id: item.id } });
-    const updatedCart = await getOrCreateCart(userId);
+    const updatedCart = await buildCartResponse(userId);
     res.json(updatedCart);
   } catch (err) { next(err); }
 });

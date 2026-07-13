@@ -14,12 +14,14 @@ import addressesRouter from "./routes/addresses";
 import paymentsRouter from "./routes/payments";
 import reviewsRouter from "./routes/reviews";
 import contactRouter from "./routes/contact";
+import campaignsRouter from "./routes/campaigns";
 import adminProductsRouter from "./routes/admin/products";
 import adminOrdersRouter from "./routes/admin/orders";
 import adminReviewsRouter from "./routes/admin/reviews";
 import adminUploadsRouter from "./routes/admin/uploads";
 import adminShipmentsRouter from "./routes/admin/shipments";
 import adminSettingsRouter from "./routes/admin/settings";
+import adminCampaignsRouter from "./routes/admin/campaigns";
 import { requireAdmin } from "./middleware/auth";
 import { errorHandler } from "./middleware/error";
 
@@ -69,6 +71,7 @@ app.use("/api/addresses", addressesRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/contact", contactRouter);
+app.use("/api/campaigns", campaignsRouter);
 
 // Admin routes — all require ADMIN role
 app.use("/api/admin/products", requireAdmin, adminProductsRouter);
@@ -77,6 +80,7 @@ app.use("/api/admin/orders/:orderId/shipment", requireAdmin, adminShipmentsRoute
 app.use("/api/admin/reviews", requireAdmin, adminReviewsRouter);
 app.use("/api/admin/uploads", requireAdmin, adminUploadsRouter);
 app.use("/api/admin/settings", requireAdmin, adminSettingsRouter);
+app.use("/api/admin/campaigns", requireAdmin, adminCampaignsRouter);
 
 app.use(errorHandler);
 

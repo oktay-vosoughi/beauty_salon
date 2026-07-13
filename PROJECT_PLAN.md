@@ -1,5 +1,12 @@
 # Project Implementation Plan — Beauty Salon Turkish E-commerce
 
+## 2026-07-13 Campaign System Update
+
+- Add admin-managed campaign records for "2 al 2 bedava".
+- Calculate campaign discounts server-side for cart/order/payment correctness.
+- Show the active campaign as a homepage banner when enabled.
+- Preserve gift/discount snapshots on order items.
+
 ## 1. Stack Decision
 
 | Layer | Choice |

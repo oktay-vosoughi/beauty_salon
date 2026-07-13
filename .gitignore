@@ -9,6 +9,9 @@ dist/
 build/
 out/
 
+# Database backups created by deploy/deploy.sh (server-side, never commit)
+backups/
+
 # Environment — real credentials, never commit
 .env
 .env.local

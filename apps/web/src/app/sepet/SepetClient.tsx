@@ -22,6 +22,18 @@ interface CartItem {
 interface Cart {
   id: number;
   items: CartItem[];
+  campaign?: { id: number; title: string } | null;
+  promotion?: {
+    subtotal: number;
+    discountTotal: number;
+    total: number;
+    items: Array<{
+      productId: number;
+      quantity: number;
+      freeQuantity: number;
+      discountAmount: number;
+    }>;
+  };
 }
 
 export default function SepetClient() {
@@ -105,6 +117,12 @@ export default function SepetClient() {
   const total = cart?.items.reduce(
     (sum, item) => sum + Number(item.product.price) * item.quantity, 0
   ) ?? 0;
+  const promotion = cart?.promotion;
+  const promotionItemsByProductId = new Map(
+    promotion?.items.map((item) => [item.productId, item]) ?? []
+  );
+  const payableTotal = promotion?.total ?? total;
+  const discountTotal = promotion?.discountTotal ?? 0;
 
   if (loading) return <p style={{ color: "var(--color-muted)" }}>Yükleniyor…</p>;
 
@@ -134,6 +152,11 @@ export default function SepetClient() {
                 <div className={styles.itemPrice}>
                   ₺{Number(item.product.price).toFixed(2)}
                 </div>
+                {(promotionItemsByProductId.get(item.product.id)?.freeQuantity ?? 0) > 0 && (
+                  <div className={styles.giftNote}>
+                    {promotionItemsByProductId.get(item.product.id)?.freeQuantity} adet kampanya hediyesi
+                  </div>
+                )}
               </div>
               <div className={styles.itemActions}>
                 <div className={styles.qty}>
@@ -160,13 +183,19 @@ export default function SepetClient() {
             <span>Ara Toplam</span>
             <span>₺{total.toFixed(2)}</span>
           </div>
+          {discountTotal > 0 && (
+            <div className={`${styles.summaryRow} ${styles.discountRow}`}>
+              <span>{cart.campaign?.title ?? "Kampanya indirimi"}</span>
+              <span>-₺{discountTotal.toFixed(2)}</span>
+            </div>
+          )}
           <div className={styles.summaryRow}>
             <span>Kargo</span>
             <span>Ücretsiz</span>
           </div>
           <div className={`${styles.summaryRow} ${styles.summaryTotal}`}>
             <span>Toplam</span>
-            <span>₺{total.toFixed(2)}</span>
+            <span>₺{payableTotal.toFixed(2)}</span>
           </div>
           <button
             className="btn btn-primary"

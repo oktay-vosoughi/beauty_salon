@@ -1,5 +1,14 @@
 # Tasks — Beauty Salon Turkish E-commerce
 
+## 2026-07-13 Campaign System
+
+- [x] Add campaign database model and migration.
+- [x] Add promotion calculation service with unit tests.
+- [x] Add admin/public campaign API routes.
+- [x] Apply campaign totals during order creation.
+- [x] Add admin campaign screen and homepage banner.
+- [x] Verify API tests and typechecks. Web build compiles but standalone output is blocked by Windows symlink permission.
+
 ## Milestone Status
 
 | # | Milestone | Status |

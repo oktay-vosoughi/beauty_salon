@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../db/prisma";
 import { requireUser } from "../middleware/auth";
 import type { AuthSession } from "../middleware/auth";
+import { calculateCartPromotion } from "../services/campaigns";
 
 const router = Router();
 router.use(requireUser);
@@ -59,12 +60,16 @@ router.post("/", async (req, res, next) => {
     // desi/ağırlığa göre dinamik hesaplanacak.
     const SHIPPING_THRESHOLD = 300;
     const SHIPPING_COST = 0;
-    const itemsTotal = cart.items.reduce(
-      (sum, item) => sum + Number(item.product.price) * item.quantity,
-      0
+    const { campaign, promotion } = await calculateCartPromotion(
+      cart.items.map((item) => ({
+        productId: item.productId,
+        unitPrice: Number(item.product.price),
+        quantity: item.quantity,
+      }))
     );
-    const shippingCost = itemsTotal < SHIPPING_THRESHOLD ? SHIPPING_COST : 0;
-    const totalAmount = itemsTotal + shippingCost;
+    const promotionByProductId = new Map(promotion.items.map((item) => [item.productId, item]));
+    const shippingCost = promotion.total < SHIPPING_THRESHOLD ? SHIPPING_COST : 0;
+    const totalAmount = promotion.total + shippingCost;
 
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
@@ -78,6 +83,9 @@ router.post("/", async (req, res, next) => {
                 productId: item.productId,
                 quantity: item.quantity,
                 unitPrice: item.product.price,
+                discountAmount: promotionByProductId.get(item.productId)?.discountAmount ?? 0,
+                isGift: (promotionByProductId.get(item.productId)?.freeQuantity ?? 0) > 0,
+                campaignId: campaign?.id ?? null,
                 titleSnapshot: item.product.title,
               })),
             },

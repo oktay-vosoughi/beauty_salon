@@ -34,6 +34,12 @@ enum ReviewStatus {
   REJECTED
 }
 
+enum CampaignType {
+  BUY_2_GET_2
+  PERCENT_DISCOUNT
+  BUY_X_PAY_Y
+}
+
 model User {
   id                   Int       @id @default(autoincrement())
   name                 String
@@ -169,12 +175,43 @@ model OrderItem {
   productId     Int
   quantity      Int
   unitPrice     Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @default(0) @db.Decimal(10, 2)
+  isGift        Boolean @default(false)
+  campaignId    Int?
   titleSnapshot String
 
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product  Product   @relation(fields: [productId], references: [id])
+  campaign Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
+  @@index([campaignId])
+}
+
+model Campaign {
+  id               Int          @id @default(autoincrement())
+  slug             String       @unique @db.VarChar(191)
+  title            String
+  description      String?      @db.Text
+  type             CampaignType @default(BUY_2_GET_2)
+  discountPercent  Decimal?     @db.Decimal(5, 2)
+  buyQuantity      Int?
+  payQuantity      Int?
+  isActive         Boolean      @default(true)
+  showOnHomepage   Boolean      @default(false)
+  startsAt         DateTime?
+  endsAt           DateTime?
+  bannerTitle      String?
+  bannerText       String?      @db.Text
+  bannerButtonText String?
+  bannerButtonHref String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([type, isActive])
+  @@index([showOnHomepage, isActive])
 }
 
 model Payment {
