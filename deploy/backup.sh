@@ -21,7 +21,11 @@ BACKUP_DIR="${BACKUP_DIR:-$REPO/backups}"
 BACKUP_KEEP="${BACKUP_KEEP:-30}"     # how many timestamped dumps to retain
 
 CNF_TMP=""
-cleanup() { [ -n "$CNF_TMP" ] && rm -f "$CNF_TMP"; }
+cleanup() {
+  if [ -n "$CNF_TMP" ]; then
+    rm -f "$CNF_TMP"
+  fi
+}
 trap cleanup EXIT
 
 cd "$REPO"
