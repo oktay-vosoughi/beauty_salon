@@ -52,9 +52,7 @@ interface FeaturedProduct {
 async function getFeaturedProducts(): Promise<FeaturedProduct[]> {
   const apiBase = process.env.API_BASE_URL ?? "http://localhost:4000";
   try {
-    const res = await fetch(`${apiBase}/api/products?limit=4`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(`${apiBase}/api/products?limit=4`, { cache: "no-store" });
     if (!res.ok) return [];
     const data = await res.json();
     return data.items ?? [];

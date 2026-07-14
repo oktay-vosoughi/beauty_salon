@@ -57,7 +57,7 @@ async function getProducts(categoryId: number): Promise<ProductsResponse> {
       limit: "50",
       categoryId: String(categoryId),
     });
-    const res = await fetch(`${API}/api/products?${params}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API}/api/products?${params}`, { cache: "no-store" });
     if (!res.ok) throw new Error("API error");
     return res.json();
   } catch {

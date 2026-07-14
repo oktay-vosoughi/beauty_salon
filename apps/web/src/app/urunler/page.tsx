@@ -41,7 +41,7 @@ async function getProducts(page: number, categoryId?: string, search?: string): 
   if (categoryId) params.set("categoryId", categoryId);
   if (search) params.set("search", search);
   try {
-    const res = await fetch(`${apiBase}/api/products?${params}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${apiBase}/api/products?${params}`, { cache: "no-store" });
     if (!res.ok) throw new Error("API error");
     return res.json();
   } catch {

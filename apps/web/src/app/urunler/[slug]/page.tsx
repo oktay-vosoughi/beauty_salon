@@ -43,7 +43,7 @@ export async function generateStaticParams() {
   }
 }
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 function absoluteUrl(url: string) {
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
@@ -52,7 +52,7 @@ function absoluteUrl(url: string) {
 
 async function getProduct(slug: string): Promise<Product | null> {
   try {
-    const res = await fetch(`${API}/api/products/${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API}/api/products/${slug}`, { cache: "no-store" });
     if (res.status === 404) return null;
     if (!res.ok) throw new Error("API error");
     return res.json();

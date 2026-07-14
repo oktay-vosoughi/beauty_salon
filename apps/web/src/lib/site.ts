@@ -3,6 +3,9 @@ export const site = {
   legalName: "NİLS GÜZELLİK MERK. SAN. VE TİC. LTD. ŞTİ.",
   alternateName: "Nil Tellioğlu Beauty",
   email: "info@niltellioglu.com",
+  phone: "08503071903",
+  phoneDisplay: "0850 307 19 03",
+  whatsappPhone: "905327419031",
   address: "Merkez Mahallesi Aşuroğlu Sokak No 5 Çekmeköy İstanbul",
   locale: "tr_TR",
   keywords: [

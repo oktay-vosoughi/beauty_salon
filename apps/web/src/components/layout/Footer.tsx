@@ -42,7 +42,18 @@ export default function Footer() {
             <ul className={styles.links}>
               <li>{site.legalName}</li>
               <li>{site.address}</li>
-              <li>{site.email}</li>
+              <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+              <li><a href={`tel:${site.phone}`}>{site.phoneDisplay}</a></li>
+              <li>
+                <a
+                  className={styles.whatsappButton}
+                  href={`https://wa.me/${site.whatsappPhone}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  WhatsApp Mesaj Gönder
+                </a>
+              </li>
             </ul>
           </div>
         </div>

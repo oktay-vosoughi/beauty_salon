@@ -21,6 +21,20 @@ test.describe("Smoke — public pages", () => {
     await expect(page.locator("main").getByText("E-posta: info@niltellioglu.com")).toBeVisible();
   });
 
+  test("Footer shows phone and WhatsApp contact links", async ({ page }) => {
+    await page.goto("/");
+
+    const footer = page.locator("footer");
+    await expect(footer.getByRole("link", { name: "0850 307 19 03" })).toHaveAttribute(
+      "href",
+      "tel:08503071903"
+    );
+    await expect(footer.getByRole("link", { name: "WhatsApp Mesaj Gönder" })).toHaveAttribute(
+      "href",
+      "https://wa.me/905327419031"
+    );
+  });
+
   test("404 page shows Turkish message", async ({ page }) => {
     await page.goto("/bu-sayfa-yok");
     await expect(page.locator("text=404")).toBeVisible();
