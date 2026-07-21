@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { legalLinks, site } from "@/lib/site";
 import styles from "./Footer.module.css";
@@ -8,7 +9,15 @@ export default function Footer() {
       <div className="container">
         <div className={styles.grid}>
           <div>
-            <span className={styles.brand}>✦ {site.name}</span>
+            <Link href="/" className={styles.brand}>
+              <Image
+                className={styles.logo}
+                src="/logo.jpg"
+                alt={site.name}
+                width={1600}
+                height={1066}
+              />
+            </Link>
             <p className={styles.tagline}>
               Nil Tellioğlu Beauty seçkisiyle cilt bakım ve kozmetik ürünlerini
               güvenli alışveriş deneyimiyle keşfedin.

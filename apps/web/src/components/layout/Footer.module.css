@@ -1,5 +1,5 @@
 .footer {
-  background: var(--color-dark);
+  background: #241b1d;
   color: rgba(255, 255, 255, 0.7);
   padding: 3.5rem 0 1.5rem;
   margin-top: auto;
@@ -13,11 +13,28 @@
 }
 
 .brand {
-  font-family: var(--font-serif);
-  font-size: 1.4rem;
-  color: var(--color-primary);
+  position: relative;
+  width: 190px;
+  height: 145px;
   margin-bottom: 0.75rem;
   display: block;
+  overflow: hidden;
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 440px;
+  height: auto;
+  max-width: none;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: lighten;
+  filter: saturate(1.55) contrast(1.14) brightness(1.12);
 }
 
 .tagline {
